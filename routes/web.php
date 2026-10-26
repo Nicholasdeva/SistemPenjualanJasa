@@ -1,18 +1,16 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Buyer;
 use App\Http\Controllers\Seller;
+use App\Http\Controllers\Shared\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Autentikasi
-|--------------------------------------------------------------------------
-*/
+// Autentikasi
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
@@ -22,12 +20,7 @@ Route::post('logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| /dashboard: arahkan pengguna ke dashboard sesuai role-nya
-| (buyer.dashboard dan admin.dashboard dibuat oleh Fiki dan Annis)
-|--------------------------------------------------------------------------
-*/
+// /dashboard: arahkan pengguna ke dashboard sesuai role-nya (buyer.dashboard, seller.dashboard, admin.dashboard)
 Route::get('dashboard', function () {
     $target = auth()->user()->role . '.dashboard';
 
@@ -36,11 +29,35 @@ Route::get('dashboard', function () {
     return redirect()->route($target);
 })->middleware('auth')->name('dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| Area Penjual
-|--------------------------------------------------------------------------
-*/
+// Area Pembeli (Fiki - Tahap 1)
+Route::middleware(['auth', 'role:buyer'])
+    ->prefix('buyer')
+    ->name('buyer.')
+    ->group(function () {
+        Route::get('dashboard', [Buyer\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('orders', [Buyer\OrderController::class, 'index'])->name('orders.index');
+
+        Route::get('checkout/{package?}', [Buyer\CheckoutController::class, 'show'])->name('checkout');
+        Route::post('checkout', [Buyer\CheckoutController::class, 'store'])->name('checkout.store');
+
+        Route::get('orders/{order?}/review', [Buyer\ReviewController::class, 'create'])->name('reviews.create');
+        Route::post('orders/{order?}/review', [Buyer\ReviewController::class, 'store'])->name('reviews.store');
+    });
+
+// Workspace Pesanan Bersama (Dipakai Pembeli & Penjual - Fiki Tahap 1)
+Route::middleware(['auth', 'role:buyer,seller'])
+    ->prefix('workspace')
+    ->name('workspace.')
+    ->group(function () {
+        Route::get('{order?}', [WorkspaceController::class, 'show'])->name('show');
+        Route::post('{order?}/message', [WorkspaceController::class, 'sendMessage'])->name('message');
+        Route::post('{order?}/deliver', [WorkspaceController::class, 'deliverWork'])->name('deliver');
+        Route::post('{order?}/revision', [WorkspaceController::class, 'requestRevision'])->name('revision');
+        Route::post('{order?}/approve', [WorkspaceController::class, 'approveOrder'])->name('approve');
+        Route::post('{order?}/dispute', [WorkspaceController::class, 'openDispute'])->name('dispute');
+    });
+
+// Area Penjual (Faqih - Tahap 1)
 Route::middleware(['auth', 'role:seller'])
     ->prefix('seller')
     ->name('seller.')
