@@ -5,12 +5,12 @@ use App\Http\Controllers\Buyer;
 use App\Http\Controllers\Seller;
 use App\Http\Controllers\Shared\WorkspaceController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Autentikasi
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
@@ -19,8 +19,6 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
-// /dashboard: arahkan pengguna ke dashboard sesuai role-nya (buyer.dashboard, seller.dashboard, admin.dashboard)
 Route::get('dashboard', function () {
     $target = auth()->user()->role . '.dashboard';
 
@@ -29,7 +27,6 @@ Route::get('dashboard', function () {
     return redirect()->route($target);
 })->middleware('auth')->name('dashboard');
 
-// Area Pembeli (Fiki - Tahap 1)
 Route::middleware(['auth', 'role:buyer'])
     ->prefix('buyer')
     ->name('buyer.')
@@ -44,7 +41,6 @@ Route::middleware(['auth', 'role:buyer'])
         Route::post('orders/{order?}/review', [Buyer\ReviewController::class, 'store'])->name('reviews.store');
     });
 
-// Workspace Pesanan Bersama (Dipakai Pembeli & Penjual - Fiki Tahap 1)
 Route::middleware(['auth', 'role:buyer,seller'])
     ->prefix('workspace')
     ->name('workspace.')
@@ -57,14 +53,12 @@ Route::middleware(['auth', 'role:buyer,seller'])
         Route::post('{order?}/dispute', [WorkspaceController::class, 'openDispute'])->name('dispute');
     });
 
-// Area Penjual (Faqih - Tahap 1)
 Route::middleware(['auth', 'role:seller'])
     ->prefix('seller')
     ->name('seller.')
     ->group(function () {
         Route::get('dashboard', [Seller\DashboardController::class, 'index'])->name('dashboard');
 
-        // services.index, create, store, edit, update, destroy
         Route::resource('services', Seller\ServiceController::class)->except(['show']);
 
         Route::get('orders', [Seller\OrderController::class, 'index'])->name('orders.index');
@@ -74,4 +68,11 @@ Route::middleware(['auth', 'role:seller'])
 
         Route::get('withdrawals', [Seller\WithdrawalController::class, 'index'])->name('withdrawals.index');
         Route::post('withdrawals', [Seller\WithdrawalController::class, 'store'])->name('withdrawals.store');
+    });
+
+    Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
     });
