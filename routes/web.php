@@ -7,6 +7,7 @@ use App\Http\Controllers\Shared\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\PasswordResetController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,6 +19,11 @@ Route::middleware('guest')->group(function () {
 
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('register', [RegisterController::class, 'register']);
+
+    Route::get('forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
 Route::post('logout', [LoginController::class, 'logout'])
@@ -78,5 +84,27 @@ Route::middleware(['auth', 'role:seller'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+       
+        Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('home');
         Route::get('dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('sellers', [Admin\SellerController::class, 'index'])->name('sellers.index');
+        Route::patch('sellers/{user}/verify', [Admin\SellerController::class, 'verify'])->name('sellers.verify');
+        Route::patch('sellers/{user}/unverify', [Admin\SellerController::class, 'unverify'])->name('sellers.unverify');
+
+        Route::get('categories', [Admin\CategoryController::class, 'index'])->name('categories.index');
+        Route::post('categories', [Admin\CategoryController::class, 'store'])->name('categories.store');
+        Route::put('categories/{category}', [Admin\CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{category}', [Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('services', [Admin\ServiceController::class, 'index'])->name('services.index');
+        Route::patch('services/{service}/activate', [Admin\ServiceController::class, 'activate'])->name('services.activate');
+        Route::patch('services/{service}/deactivate', [Admin\ServiceController::class, 'deactivate'])->name('services.deactivate');
+
+        Route::get('withdrawals', [Admin\WithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::patch('withdrawals/{withdrawal}/process', [Admin\WithdrawalController::class, 'process'])->name('withdrawals.process');
+
+        Route::get('disputes', [Admin\DisputeController::class, 'index'])->name('disputes.index');
+        Route::get('disputes/{dispute}', [Admin\DisputeController::class, 'show'])->name('disputes.show');
+        Route::patch('disputes/{dispute}/resolve', [Admin\DisputeController::class, 'resolve'])->name('disputes.resolve');
     });
