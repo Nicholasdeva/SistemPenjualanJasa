@@ -25,6 +25,7 @@ class DashboardController extends Controller
             'walletBalance' => $profile->wallet_balance ?? 0,
             'escrowBalance' => $profile->escrow_balance ?? 0,
             'averageRating' => $averageRating ? round($averageRating, 1) : 0,
+            'isVerified'    => (bool) ($profile->is_verified ?? false),
         ]);
     }
 }

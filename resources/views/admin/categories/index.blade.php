@@ -3,7 +3,10 @@
 @section('title', 'Kelola Kategori')
 
 @section('content')
-<h1 class="h4 fw-bold mb-4">Kelola Kategori</h1>
+<div class="mb-4">
+    <h1 class="h4 fw-bold mb-1">Kelola Kategori</h1>
+    <p class="text-secondary small mb-0">Kategori dipakai penjual saat menambahkan jasa.</p>
+</div>
 
 @if ($errors->any())
     <div class="alert alert-danger"><ul class="mb-0">
@@ -11,7 +14,7 @@
     </ul></div>
 @endif
 
-<div class="card shadow-sm mb-4">
+<div class="card mb-4">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.categories.store') }}" class="row g-2">
             @csrf
@@ -25,7 +28,7 @@
     </div>
 </div>
 
-<div class="card shadow-sm">
+<div class="card">
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead class="table-light">

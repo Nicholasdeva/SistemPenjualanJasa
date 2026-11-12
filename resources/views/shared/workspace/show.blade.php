@@ -32,7 +32,7 @@
             <div>
                 <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
                     <span class="badge text-bg-dark">{{ $orderData['invoice_no'] }}</span>
-                    <span class="badge bg-primary bg-opacity-10 text-primary">Paket {{ $orderData['tier_name'] }}</span>
+                    <span class="badge text-bg-light border">Paket {{ $orderData['tier_name'] }}</span>
                     <x-status-badge :status="$orderData['status']" />
                 </div>
                 <h1 class="h4 fw-bold mb-1">{{ $orderData['service_title'] }}</h1>
@@ -68,9 +68,7 @@
     <div class="col-lg-8">
         <!-- 1. Kartu Brief Proyek -->
         <x-card title="Brief &amp; Spesifikasi Proyek" subtitle="Instruksi resmi dari pembeli saat pemesanan" icon="bi-journal-text" class="mb-4">
-            <div class="p-3 rounded-3 bg-light border-start border-4 border-primary">
-                <p class="mb-0 text-dark" style="line-height: 1.65;">{{ $orderData['project_brief'] }}</p>
-            </div>
+            <p class="mb-0 text-dark" style="line-height: 1.65; white-space: pre-line;">{{ $orderData['project_brief'] }}</p>
         </x-card>
 
         <!-- 2. Daftar File Hasil Kerja -->
@@ -86,9 +84,7 @@
                     @foreach ($deliverables as $item)
                         <div class="list-group-item px-0 py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                             <div class="d-flex align-items-start gap-3">
-                                <div class="rounded-3 bg-primary bg-opacity-10 text-primary p-2 px-3">
-                                    <i class="bi bi-file-earmark-zip-fill fs-4"></i>
-                                </div>
+                                <i class="bi bi-file-earmark-zip text-secondary fs-4 lh-1 mt-1"></i>
                                 <div>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="fw-semibold text-dark">{{ $item['filename'] }}</span>

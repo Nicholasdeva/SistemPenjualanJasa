@@ -10,63 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --brand-primary: #2563eb;
-            --brand-dark: #0f172a;
-        }
-        body {
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
-        .navbar-brand-badge {
-            font-size: 0.7rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .app-sidebar {
-            min-height: calc(100vh - 56px);
-            background: #ffffff;
-            border-right: 1px solid #e2e8f0;
-        }
-        .app-sidebar .nav-link {
-            color: #475569;
-            font-weight: 500;
-            padding: 0.6rem 0.9rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            transition: all 0.15s ease-in-out;
-        }
-        .app-sidebar .nav-link:hover {
-            background-color: #f1f5f9;
-            color: #0f172a;
-        }
-        .app-sidebar .nav-link.active {
-            background-color: #eff6ff;
-            color: #2563eb;
-            font-weight: 600;
-        }
-        .sidebar-heading {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #94a3b8;
-            padding: 0.75rem 0.9rem 0.35rem;
-        }
-        .card {
-            border-color: #e2e8f0;
-            border-radius: 0.75rem;
-        }
-        .card-header {
-            border-bottom-color: #f1f5f9;
-            border-top-left-radius: 0.75rem !important;
-            border-top-right-radius: 0.75rem !important;
-        }
-    </style>
+    <!-- Tema bersama (menimpa variabel Bootstrap, lihat public/css/theme.css) -->
+    <link href="{{ asset('css/theme.css') }}?v={{ filemtime(public_path('css/theme.css')) }}" rel="stylesheet">
+
     @stack('styles')
 </head>
 <body class="d-flex flex-column h-100">
@@ -78,23 +24,23 @@
 
     $roleLabel = match($userRole) {
         'buyer'  => ['text' => 'Pembeli', 'class' => 'text-bg-primary'],
-        'seller' => ['text' => 'Penjual Jasa', 'class' => 'text-bg-success'],
-        'admin'  => ['text' => 'Administrator', 'class' => 'text-bg-danger'],
+        'seller' => ['text' => 'Penjual', 'class' => 'text-bg-success'],
+        'admin'  => ['text' => 'Admin', 'class' => 'text-bg-warning'],
         default  => ['text' => 'Pengunjung', 'class' => 'text-bg-secondary'],
     };
 @endphp
 
 <!-- Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top app-navbar">
     <div class="container-fluid px-3 px-lg-4">
         @if ($showSidebar)
-            <button class="btn btn-outline-secondary btn-sm d-lg-none me-2 text-light border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#roleSidebarOffcanvas" aria-controls="roleSidebarOffcanvas">
+            <button class="btn btn-outline-secondary btn-sm d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#roleSidebarOffcanvas" aria-controls="roleSidebarOffcanvas">
                 <i class="bi bi-list fs-5"></i>
             </button>
         @endif
 
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url('/') }}">
-            <i class="bi bi-briefcase-fill text-primary"></i>
+        <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="{{ url('/') }}">
+            <span class="brand-mark"><i class="bi bi-briefcase-fill"></i></span>
             <span>Marketplace Jasa</span>
             @auth
                 <span class="badge {{ $roleLabel['class'] }} navbar-brand-badge">{{ $roleLabel['text'] }}</span>
@@ -121,50 +67,13 @@
                     </li>
                 @endif
 
+                {{-- Menu khusus peran ada di sidebar kiri (dan offcanvas di HP), di sini cukup tautan ke dashboard --}}
                 @auth
-                    @if ($userRole === 'buyer')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('buyer.dashboard') ? 'active' : '' }}" href="{{ route('buyer.dashboard') }}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('buyer.orders.*') ? 'active' : '' }}" href="{{ route('buyer.orders.index') }}">Pesanan Saya</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('buyer.checkout*') ? 'active' : '' }}" href="{{ route('buyer.checkout') }}">Checkout</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ route('workspace.show', 1) }}">Workspace</a>
-                        </li>
-                    @elseif ($userRole === 'seller')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}" href="{{ route('seller.dashboard') }}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('seller.services.*') ? 'active' : '' }}" href="{{ route('seller.services.index') }}">Jasa Saya</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('seller.orders.*') ? 'active' : '' }}" href="{{ route('seller.orders.index') }}">Pesanan Masuk</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ route('workspace.show', 1) }}">Workspace</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('seller.profile.*') ? 'active' : '' }}" href="{{ route('seller.profile.edit') }}">Profil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('seller.withdrawals.*') ? 'active' : '' }}" href="{{ route('seller.withdrawals.index') }}">Tarik Saldo</a>
-                        </li>
-                    @elseif ($userRole === 'admin')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('admin/dashboard*') ? 'active' : '' }}" href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : url('/admin/dashboard') }}">Dashboard Admin</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('admin/sellers*') ? 'active' : '' }}" href="{{ Route::has('admin.sellers.index') ? route('admin.sellers.index') : url('/admin/sellers') }}">Verifikasi Penjual</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('admin/disputes*') ? 'active' : '' }}" href="{{ Route::has('admin.disputes.index') ? route('admin.disputes.index') : url('/admin/disputes') }}">Dispute Center</a>
-                        </li>
-                    @endif
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs($userRole . ".*") || request()->routeIs("workspace.*") ? "active" : "" }}" href="{{ route("dashboard") }}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
                 @endauth
             </ul>
 
@@ -172,13 +81,11 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
                 @auth
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-semibold" style="width: 30px; height: 30px; font-size: 0.85rem;">
-                                {{ strtoupper(substr($currentUser->name, 0, 1)) }}
-                            </span>
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="avatar-circle">{{ strtoupper(substr($currentUser->name, 0, 1)) }}</span>
                             <span>{{ $currentUser->name }}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li class="px-3 py-2 border-bottom">
                                 <div class="fw-semibold small">{{ $currentUser->name }}</div>
                                 <div class="text-muted" style="font-size: 0.78rem;">{{ $currentUser->email }}</div>
@@ -215,15 +122,11 @@
                     </li>
                 @else
                     <li class="nav-item">
-                        <a class="btn btn-outline-light btn-sm px-3" href="{{ route('login') }}">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                        </a>
+                        <a class="nav-link" href="{{ route('login') }}">Masuk</a>
                     </li>
                     @if (Route::has('register'))
                         <li class="nav-item">
-                            <a class="btn btn-primary btn-sm px-3" href="{{ route('register') }}">
-                                <i class="bi bi-person-plus me-1"></i>Daftar
-                            </a>
+                            <a class="btn btn-primary px-3" href="{{ route('register') }}">Daftar gratis</a>
                         </li>
                     @endif
                 @endauth
@@ -255,9 +158,11 @@
         @endif
 
         <!-- Main Content Area -->
-        <main class="{{ $showSidebar ? 'col-12 col-lg-9 col-xl-10 px-3 px-md-4 py-4' : 'col-12 py-4' }}">
-            <div class="{{ $showSidebar ? '' : 'container' }}">
+        @php $fullWidth = View::hasSection('full_width'); @endphp
+        <main class="{{ $fullWidth ? 'col-12 p-0' : ($showSidebar ? 'col-12 col-lg-9 col-xl-10 px-3 px-md-4 py-4' : 'col-12 py-4') }}">
+            <div class="{{ $fullWidth || $showSidebar ? '' : 'container' }}">
                 <!-- Area Pesan Flash -->
+                <div class="{{ $fullWidth ? 'wrap pt-4' : '' }}">
                 @if (session('status'))
                     <x-alert type="success" class="mb-4">
                         {{ session('status') }}
@@ -287,6 +192,7 @@
                         {{ session('info') }}
                     </x-alert>
                 @endif
+                </div>
 
                 @yield('content')
             </div>
@@ -295,15 +201,15 @@
 </div>
 
 <!-- Footer -->
-<footer class="bg-white border-top mt-auto py-3">
+<footer class="app-footer mt-auto py-4">
     <div class="container-fluid px-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted gap-2">
-            <div>
-                <strong class="text-dark">Marketplace Penjualan Jasa</strong> &copy; {{ date('Y') }} — Proyek UTS Pemrograman Web Lanjut (Laravel &amp; PostgreSQL).
+            <div class="d-flex align-items-center gap-2">
+                <span class="brand-mark" style="width:24px;height:24px;font-size:.75rem;box-shadow:none;"><i class="bi bi-briefcase-fill"></i></span>
+                <span><strong class="text-dark">Marketplace Jasa</strong> &copy; {{ date('Y') }} · Proyek UTS Pemrograman Web Lanjut</span>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span><i class="bi bi-shield-check text-success me-1"></i>Transaksi Aman dengan Escrow</span>
-                <span class="text-secondary">|</span>
+                <span><i class="bi bi-shield-check text-primary me-1"></i>Transaksi aman dengan escrow</span>
                 <span>Tim: Faqih, Nico, Annis, Fiki</span>
             </div>
         </div>

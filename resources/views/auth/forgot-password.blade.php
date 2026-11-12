@@ -1,30 +1,30 @@
 @extends('layouts.app')
 
 @section('title', 'Lupa Password')
+@section('hide_sidebar', true)
 
 @section('content')
-<div class="container mt-5" style="max-width: 480px;">
-    <h2 class="mb-3">Lupa Password</h2>
-    <p class="text-muted">Masukkan email akunmu, kami kirimkan tautan untuk mengatur ulang password.</p>
+<div class="auth-wrap">
+    <div class="card">
+        <div class="card-body p-4 p-md-5">
+            <span class="brand-mark mb-4"><i class="bi bi-briefcase-fill"></i></span>
+            <h1 class="h4 fw-bold mb-1">Lupa password</h1>
+            <p class="text-secondary small mb-4">Masukkan email akun kamu. Kami akan mengirim tautan untuk mengatur ulang password.</p>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
-
-    @if ($errors->any())
-        <div class="alert alert-danger"><ul class="mb-0">
-            @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-        </ul></div>
-    @endif
-
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus>
+            <form method="POST" action="{{ route('password.email') }}" novalidate>
+                @csrf
+                <div class="mb-4">
+                    <label for="email" class="form-label small fw-semibold">Email</label>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email"
+                           value="{{ old('email') }}" placeholder="nama@gmail.com" required autofocus>
+                    @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Kirim tautan reset</button>
+            </form>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Kirim Tautan Reset</button>
-        <p class="text-center small mt-3 mb-0"><a href="{{ route('login') }}">Kembali ke login</a></p>
-    </form>
+        <div class="card-footer bg-white text-center small py-3">
+            <a href="{{ route('login') }}" class="text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Kembali ke halaman masuk</a>
+        </div>
+    </div>
 </div>
 @endsection

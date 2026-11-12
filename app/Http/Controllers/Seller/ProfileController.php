@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Seller\UpdateSellerProfileRequest;
 use App\Models\SellerProfile;
-use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
@@ -15,19 +15,25 @@ class ProfileController extends Controller
         return view('seller.profile', compact('profile'));
     }
 
-    public function update(Request $request)
+    public function update(UpdateSellerProfileRequest $request)
     {
-        $data = $request->validate([
-            'ktp_number'   => ['nullable', 'string', 'max:30'],
-            'bank_name'    => ['nullable', 'string', 'max:100'],
-            'bank_account' => ['nullable', 'string', 'max:50'],
-        ]);
+        $profile = SellerProfile::firstOrCreate(['user_id' => $request->user()->id]);
+        $profile->fill($request->validated());
 
-        // is_verified TIDAK boleh diubah penjual; itu tugas admin.
-        $profile = SellerProfile::firstOrCreate(['user_id' => auth()->id()]);
-        $profile->update($data);
+        // is_verified hanya diubah admin. Jika data yang sudah diverifikasi diganti,
+        // status kembali "menunggu" supaya admin memeriksa ulang.
+        $needsReverify = $profile->is_verified && $profile->isDirty(['ktp_number', 'bank_account']);
+        if ($needsReverify) {
+            $profile->is_verified = false;
+        }
 
-        return redirect()->route('seller.profile.edit')
-            ->with('status', 'Profil berhasil disimpan.');
+        $profile->save();
+
+        return redirect()->route('seller.profile.edit')->with(
+            $needsReverify ? 'warning' : 'status',
+            $needsReverify
+                ? 'Profil disimpan. Karena KTP atau nomor rekening berubah, akunmu perlu diverifikasi ulang oleh admin.'
+                : 'Profil berhasil disimpan.'
+        );
     }
 }

@@ -12,7 +12,7 @@
                     <i class="bi bi-hdd-network display-5"></i>
                 </span>
             </div>
-            <span class="badge text-bg-secondary align-self-center mb-2 px-3 py-1">ERROR 500 — SERVER ERROR</span>
+            <span class="badge text-bg-secondary align-self-center mb-2 px-3 py-1">ERROR 500 · SERVER ERROR</span>
             <h1 class="h3 fw-bold text-dark mb-2">Terjadi Gangguan pada Server</h1>
             <p class="text-muted mb-4">
                 Maaf, terjadi kesalahan teknis saat memproses permintaan Anda. Silakan muat ulang halaman beberapa saat lagi.

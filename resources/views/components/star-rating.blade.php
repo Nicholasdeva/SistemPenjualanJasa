@@ -39,11 +39,11 @@
             const badge = container.querySelector('[data-rating-label]');
             const caption = container.querySelector('[data-rating-caption]');
             const descriptions = {
-                1: '1 Bintang — Sangat Kurang Memuaskan',
-                2: '2 Bintang — Kurang Memuaskan',
-                3: '3 Bintang — Cukup Sesuai Ekspektasi',
-                4: '4 Bintang — Bagus & Direkomendasikan',
-                5: '5 Bintang — Sangat Memuaskan & Profesional!'
+                1: '1 Bintang · Sangat Kurang Memuaskan',
+                2: '2 Bintang · Kurang Memuaskan',
+                3: '3 Bintang · Cukup Sesuai Ekspektasi',
+                4: '4 Bintang · Bagus & Direkomendasikan',
+                5: '5 Bintang · Sangat Memuaskan & Profesional!'
             };
 
             function renderStars(val) {

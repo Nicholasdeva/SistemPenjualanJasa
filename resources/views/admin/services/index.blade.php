@@ -3,9 +3,12 @@
 @section('title', 'Moderasi Layanan')
 
 @section('content')
-<h1 class="h4 fw-bold mb-4">Moderasi Layanan</h1>
+<div class="mb-4">
+    <h1 class="h4 fw-bold mb-1">Moderasi Layanan</h1>
+    <p class="text-secondary small mb-0">Turunkan jasa yang melanggar aturan atau tayangkan kembali.</p>
+</div>
 
-<div class="card shadow-sm">
+<div class="card">
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead class="table-light">

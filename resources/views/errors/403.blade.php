@@ -12,7 +12,7 @@
                     <i class="bi bi-shield-lock-fill display-5"></i>
                 </span>
             </div>
-            <span class="badge text-bg-danger align-self-center mb-2 px-3 py-1">ERROR 403 — FORBIDDEN</span>
+            <span class="badge text-bg-danger align-self-center mb-2 px-3 py-1">ERROR 403 · FORBIDDEN</span>
             <h1 class="h3 fw-bold text-dark mb-2">Akses Ditolak</h1>
             <p class="text-muted mb-4">
                 {{ $exception->getMessage() ?: 'Maaf, akun Anda tidak memiliki izin peran (role) yang sesuai untuk mengakses halaman ini.' }}

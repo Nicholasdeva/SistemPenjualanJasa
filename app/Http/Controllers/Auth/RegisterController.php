@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\SellerProfile;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
@@ -15,26 +15,12 @@ class RegisterController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role'     => ['required', 'in:buyer,seller'],
-        ], [
-            'name.required'      => 'Nama wajib diisi.',
-            'email.required'     => 'Email wajib diisi.',
-            'email.email'        => 'Format email tidak valid.',
-            'email.unique'       => 'Email sudah terdaftar.',
-            'password.required'  => 'Password wajib diisi.',
-            'password.min'       => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'role.required'      => 'Pilih peran terlebih dahulu.',
-            'role.in'            => 'Peran tidak valid.',
-        ]);
+        $user = User::create($request->validated()); // password otomatis di-hash oleh cast di model User
 
-        $user = User::create($data); // password otomatis di-hash oleh cast di model User
+        Auth::login($user);
+        $request->session()->regenerate();
 
         if ($user->role === 'seller') {
             SellerProfile::create([
@@ -43,10 +29,11 @@ class RegisterController extends Controller
                 'bank_name'    => '',
                 'bank_account' => '',
             ]);
-        }
 
-        Auth::login($user);
-        $request->session()->regenerate();
+            // Penjual baru diarahkan untuk melengkapi KTP dan rekening
+            return redirect()->route('seller.profile.edit')
+                ->with('info', 'Akun penjual berhasil dibuat. Lengkapi data KTP dan rekening agar bisa diverifikasi admin.');
+        }
 
         return redirect()->route('dashboard');
     }

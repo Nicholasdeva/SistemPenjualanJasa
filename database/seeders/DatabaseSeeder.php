@@ -76,5 +76,8 @@ class DatabaseSeeder extends Seeder
             'platform_fee'       => 15000,
             'deadline_at'        => now()->addDays(3),
         ]);
+
+        // Data dummy lengkap (akun @gmail.com, password: 123)
+        $this->call(DummyDataSeeder::class);
     }
 }

@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
+Route::get('catalog/{service}', [CatalogController::class, 'show'])->name('catalog.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -72,6 +74,7 @@ Route::middleware(['auth', 'role:seller'])
         Route::resource('services', Seller\ServiceController::class)->except(['show']);
 
         Route::get('orders', [Seller\OrderController::class, 'index'])->name('orders.index');
+        Route::patch('orders/{order}/start', [Seller\OrderController::class, 'start'])->name('orders.start');
 
         Route::get('profile', [Seller\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [Seller\ProfileController::class, 'update'])->name('profile.update');

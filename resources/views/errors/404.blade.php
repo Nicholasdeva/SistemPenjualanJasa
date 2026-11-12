@@ -12,7 +12,7 @@
                     <i class="bi bi-compass display-5"></i>
                 </span>
             </div>
-            <span class="badge text-bg-warning text-dark align-self-center mb-2 px-3 py-1">ERROR 404 — NOT FOUND</span>
+            <span class="badge text-bg-warning text-dark align-self-center mb-2 px-3 py-1">ERROR 404 · NOT FOUND</span>
             <h1 class="h3 fw-bold text-dark mb-2">Halaman Tidak Ditemukan</h1>
             <p class="text-muted mb-4">
                 Maaf, halaman atau data pesanan/jasa yang Anda cari tidak ditemukan atau telah dipindahkan.
