@@ -10,10 +10,13 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Buyer\PaymentController;
+use App\Http\Controllers\MidtransWebhookController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 Route::get('catalog/{service}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::post('midtrans/notification', [MidtransWebhookController::class, 'handle'])->name('midtrans.notification');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -31,6 +34,7 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
 Route::get('dashboard', function () {
     $target = auth()->user()->role . '.dashboard';
 
@@ -46,8 +50,16 @@ Route::middleware(['auth', 'role:buyer'])
         Route::get('dashboard', [Buyer\DashboardController::class, 'index'])->name('dashboard');
         Route::get('orders', [Buyer\OrderController::class, 'index'])->name('orders.index');
 
-        Route::get('checkout/{package?}', [Buyer\CheckoutController::class, 'show'])->name('checkout');
+        Route::get('payments', [Buyer\OrderListController::class, 'pendingPayments'])->name('payments.index');
+        Route::get('reviews', [Buyer\OrderListController::class, 'reviewable'])->name('reviews.index');
+
+        Route::get('checkout/{package}', [Buyer\CheckoutController::class, 'show'])->name('checkout');
         Route::post('checkout', [Buyer\CheckoutController::class, 'store'])->name('checkout.store');
+
+        Route::get('orders/{order}/pay', [PaymentController::class, 'pay'])->name('orders.pay');
+        Route::post('orders/{order}/snap-token', [PaymentController::class, 'snapToken'])->name('orders.snap-token');
+        Route::post('orders/{order}/sync-payment', [PaymentController::class, 'sync'])->name('orders.sync-payment');
+        Route::post('orders/{order}/simulate-pay', [PaymentController::class, 'simulatePay'])->name('orders.simulate-pay');
 
         Route::get('orders/{order?}/review', [Buyer\ReviewController::class, 'create'])->name('reviews.create');
         Route::post('orders/{order?}/review', [Buyer\ReviewController::class, 'store'])->name('reviews.store');
@@ -83,11 +95,10 @@ Route::middleware(['auth', 'role:seller'])
         Route::post('withdrawals', [Seller\WithdrawalController::class, 'store'])->name('withdrawals.store');
     });
 
-    Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-       
         Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('home');
         Route::get('dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 

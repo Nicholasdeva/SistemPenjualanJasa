@@ -1,4 +1,16 @@
 @if ($userRole === 'buyer')
+    @php
+        // Pesanan terbaru yang sudah punya Workspace (sudah dibayar).
+        $workspaceOrder = \App\Models\Order::where('buyer_id', auth()->id())
+            ->whereIn('status', ['paid', 'in_progress', 'delivered', 'revision', 'completed', 'disputed'])
+            ->latest()
+            ->first();
+
+        $workspaceUrl = $workspaceOrder
+            ? route('workspace.show', $workspaceOrder->id)
+            : route('buyer.orders.index');
+    @endphp
+
     <div class="sidebar-heading">Area Pembeli (Klien)</div>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('buyer.dashboard') ? 'active' : '' }}" href="{{ route('buyer.dashboard') }}">
@@ -9,15 +21,15 @@
             <i class="bi bi-bag-check"></i>
             <span>Pesanan Saya</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('buyer.checkout*') ? 'active' : '' }}" href="{{ route('buyer.checkout') }}">
+        <a class="nav-link {{ request()->routeIs('buyer.payments.*', 'buyer.checkout*') ? 'active' : '' }}" href="{{ route('buyer.payments.index') }}">
             <i class="bi bi-credit-card"></i>
             <span>Checkout &amp; Bayar</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ route('workspace.show', 1) }}">
+        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ $workspaceUrl }}">
             <i class="bi bi-chat-left-dots"></i>
             <span>Workspace Pesanan</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('buyer.reviews.*') ? 'active' : '' }}" href="{{ route('buyer.reviews.create', 1) }}">
+        <a class="nav-link {{ request()->routeIs('buyer.reviews.*') ? 'active' : '' }}" href="{{ route('buyer.reviews.index') }}">
             <i class="bi bi-star"></i>
             <span>Form Ulasan Jasa</span>
         </a>

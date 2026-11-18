@@ -3,68 +3,51 @@
 namespace App\Http\Controllers\Buyer;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreOrderRequest;
+use App\Models\Order;
+use App\Models\Review;
+use App\Models\Service;
+use App\Models\ServicePackage;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    public function show(Request $request, int $package = 1)
-    {
-        $packages = [
-            1 => [
-                'id'             => 1,
-                'tier_name'      => 'Basic',
-                'price'          => 150000,
-                'delivery_days'  => 3,
-                'revision_limit' => 1,
-                'features'       => [
-                    '2 konsep awal desain logo',
-                    'File resolusi tinggi (PNG & JPG transparan)',
-                    'Maksimal 1x revisi minor',
-                    'Pengerjaan 3 hari kerja',
-                ],
-            ],
-            2 => [
-                'id'             => 2,
-                'tier_name'      => 'Standard',
-                'price'          => 300000,
-                'delivery_days'  => 5,
-                'revision_limit' => 3,
-                'features'       => [
-                    '3 konsep awal desain logo',
-                    'File master vektor (AI, EPS, SVG, PDF)',
-                    'Mockup presentasi 3D realistis',
-                    'Maksimal 3x revisi',
-                    'Pengerjaan 5 hari kerja',
-                ],
-            ],
-            3 => [
-                'id'             => 3,
-                'tier_name'      => 'Premium',
-                'price'          => 500000,
-                'delivery_days'  => 7,
-                'revision_limit' => 5,
-                'features'       => [
-                    '5 konsep eksklusif desain logo',
-                    'Semua file sumber + Brand Guidelines PDF lengkap',
-                    'Desain kartu nama & kop surat',
-                    'Maksimal 5x revisi prioritas',
-                    'Pengerjaan 7 hari kerja',
-                ],
-            ],
-        ];
+    /** Biaya platform: 10% dari harga paket, dipotong dari penjual (keputusan #2). */
+    private const PLATFORM_FEE_RATE = 0.10;
 
-        $selectedPackage = $packages[$package] ?? $packages[1];
-        $platformFee = (int) round($selectedPackage['price'] * 0.10);
-        $totalPrice = $selectedPackage['price'] + $platformFee;
+    public function show(ServicePackage $package)
+    {
+        $package->load('service.seller.sellerProfile');
+        $serviceModel = $package->service;
+
+        // Jasa yang tidak tampil di katalog (draft / penjual belum terverifikasi) tidak bisa dipesan.
+        if (! $serviceModel || ! Service::visibleInCatalog()->whereKey($serviceModel->id)->exists()) {
+            return redirect()
+                ->route('catalog')
+                ->with('error', 'Jasa ini sedang tidak tersedia untuk dipesan.');
+        }
+
+        abort_if((int) $serviceModel->seller_id === (int) auth()->id(), 403, 'Anda tidak dapat memesan jasa milik sendiri.');
+
+        $packages = $serviceModel->packages()
+            ->orderBy('price')
+            ->get()
+            ->mapWithKeys(fn (ServicePackage $p) => [$p->id => $this->packageToArray($p)])
+            ->all();
+
+        $selectedPackage = $packages[$package->id];
+
+        $totalPrice  = $selectedPackage['price'];
+        $platformFee = (int) round($totalPrice * self::PLATFORM_FEE_RATE);
 
         $service = [
-            'id'          => 1,
-            'title'       => 'Desain Logo Profesional & Brand Identity UMKM',
-            'category'    => 'Desain',
-            'seller_name' => 'Sinta Penjual',
-            'is_verified' => true,
-            'rating'      => 4.9,
-            'reviews'     => 28,
+            'id'          => $serviceModel->id,
+            'title'       => $serviceModel->title,
+            'category'    => $serviceModel->category?->name ?? '-',
+            'seller_name' => $serviceModel->seller->name,
+            'is_verified' => (bool) $serviceModel->seller->sellerProfile?->is_verified,
+            'rating'      => round((float) Review::where('service_id', $serviceModel->id)->avg('rating'), 1),
+            'reviews'     => Review::where('service_id', $serviceModel->id)->count(),
         ];
 
         return view('buyer.checkout', compact(
@@ -76,18 +59,61 @@ class CheckoutController extends Controller
         ));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
-        $request->validate([
-            'service_package_id' => ['required', 'integer'],
-            'project_brief'      => ['required', 'string', 'min:20'],
-        ], [
-            'project_brief.required' => 'Brief proyek wajib diisi agar penjual memahami kebutuhan Anda.',
-            'project_brief.min'      => 'Brief proyek minimal 20 karakter agar instruksi jelas.',
-        ]);
+        $package = ServicePackage::findOrFail($request->integer('service_package_id'));
 
-        return redirect()
-            ->route('workspace.show', 1)
-            ->with('status', 'Pesanan dummy berhasil dibuat! Pada Tahap 2 tombol ini akan membuka popup pembayaran Midtrans Snap Sandbox.');
+        $brief = trim($request->input('project_brief'));
+        if ($request->filled('reference_link')) {
+            $brief .= "\n\nReferensi: " . $request->input('reference_link');
+        }
+
+        $order = DB::transaction(function () use ($request, $package, $brief) {
+            $price = (float) $package->price;
+
+            return Order::create([
+                'invoice_no'         => $this->generateInvoiceNo(),
+                'buyer_id'           => $request->user()->id,
+                'service_package_id' => $package->id,
+                'status'             => 'pending_payment',
+                'project_brief'      => $brief,
+                'total_price'        => $price,
+                'platform_fee'       => round($price * self::PLATFORM_FEE_RATE, 2),
+                'deadline_at'        => null,
+            ]);
+        });
+
+            return redirect()
+            ->route('buyer.orders.pay', $order->id)
+            ->with('status', "Pesanan {$order->invoice_no} dibuat. Silakan selesaikan pembayaran.");
+    }
+
+    private function generateInvoiceNo(): string
+    {
+        $prefix = 'INV-' . now()->format('Ymd') . '-';
+
+        $last = Order::where('invoice_no', 'like', $prefix . '%')
+            ->lockForUpdate()
+            ->orderByDesc('invoice_no')
+            ->value('invoice_no');
+
+        $next = $last ? ((int) substr($last, -4)) + 1 : 1;
+
+        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function packageToArray(ServicePackage $p): array
+    {
+        return [
+            'id'             => $p->id,
+            'tier_name'      => $p->tier_name,
+            'price'          => (int) round((float) $p->price),
+            'delivery_days'  => (int) $p->delivery_days,
+            'revision_limit' => (int) $p->revision_limit,
+            'features'       => [
+                "Pengerjaan {$p->delivery_days} hari kerja",
+                "Maksimal {$p->revision_limit}x revisi",
+            ],
+        ];
     }
 }

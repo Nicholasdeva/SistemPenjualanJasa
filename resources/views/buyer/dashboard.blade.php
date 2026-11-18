@@ -12,11 +12,18 @@
         <x-button :href="route('buyer.orders.index')" variant="outline-primary" icon="bi-bag-check">
             Semua Pesanan
         </x-button>
-        <x-button :href="route('buyer.checkout')" variant="primary" icon="bi-cart-plus">
-            Simulasi Checkout
+        <x-button :href="route('catalog')" variant="primary" icon="bi-cart-plus">
+            Cari Jasa
         </x-button>
     </div>
 </div>
+
+@if ($stats['pending_payment'] > 0)
+    <x-alert type="warning" title="Ada pesanan menunggu pembayaran">
+        Anda punya {{ $stats['pending_payment'] }} pesanan yang belum dibayar.
+        <a href="{{ route('buyer.orders.index') }}" class="alert-link">Lihat pesanan</a>.
+    </x-alert>
+@endif
 
 <!-- Kartu Ringkasan Pembeli -->
 <div class="row g-3 mb-4">
@@ -95,8 +102,8 @@
                     title="Belum Ada Pesanan Aktif"
                     description="Anda belum memiliki pesanan yang sedang berjalan. Pilih jasa terbaik di katalog untuk memulai proyek."
                     icon="bi-bag-plus"
-                    actionText="Lihat Katalog Jasa"
-                    :actionUrl="url('/')"
+                    actionText="Cari Jasa"
+                    :actionUrl="route('catalog')"
                 />
             @else
                 <div class="d-flex flex-column gap-3">
@@ -125,9 +132,18 @@
                                     Total: Rp {{ number_format($order['total_price'], 0, ',', '.') }}
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <x-button :href="route('workspace.show', $order['id'])" variant="primary" size="sm" icon="bi-chat-left-text">
-                                        Buka Workspace
-                                    </x-button>
+                                    @if ($order['status'] === 'pending_payment')
+                                        <form action="{{ route('buyer.orders.simulate-pay', $order['id']) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <x-button type="submit" variant="success" size="sm" icon="bi-cash-coin">
+                                                Bayar Sekarang
+                                            </x-button>
+                                        </form>
+                                    @else
+                                        <x-button :href="route('workspace.show', $order['id'])" variant="primary" size="sm" icon="bi-chat-left-text">
+                                            Buka Workspace
+                                        </x-button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -150,7 +166,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($recentHistory as $hist)
+                        @forelse ($recentHistory as $hist)
                             <tr>
                                 <td>
                                     <div class="fw-semibold">{{ $hist['service'] }}</div>
@@ -169,16 +185,20 @@
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">Belum ada pesanan yang selesai.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </x-card>
     </div>
 
-    <!-- Kolom Kanan: Jasa yang Disimpan (Wishlist) -->
+    <!-- Kolom Kanan: Rekomendasi Jasa dari Katalog -->
     <div class="col-lg-4">
-        <x-card title="Jasa yang Disimpan" subtitle="Daftar layanan favorit pilihan Anda" icon="bi-bookmark-heart-fill">
+        <x-card title="Jasa Terbaru di Katalog" subtitle="Rekomendasi dari penjual terverifikasi" icon="bi-stars">
             <div class="d-flex flex-column gap-3">
                 @foreach ($savedServices as $srv)
                     <div class="p-3 rounded-3 border bg-white">
@@ -195,8 +215,8 @@
                                 <span class="text-muted small d-block" style="font-size: 0.72rem;">Mulai dari</span>
                                 <span class="fw-bold text-primary">Rp {{ number_format($srv['starting_price'], 0, ',', '.') }}</span>
                             </div>
-                            <x-button :href="route('buyer.checkout', $srv['id'])" variant="outline-primary" size="sm" icon="bi-bag-plus">
-                                Pesan Jasa
+                            <x-button :href="route('catalog.show', $srv['id'])" variant="outline-primary" size="sm" icon="bi-eye">
+                                Lihat Jasa
                             </x-button>
                         </div>
                     </div>
