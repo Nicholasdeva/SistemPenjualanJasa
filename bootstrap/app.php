@@ -13,8 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+         $middleware->validateCsrfTokens(except: [
+            'midtrans/notification',
+        ]);   
+        
         $middleware->alias([
             'role' => CheckRole::class,
+        ]);
+        
+        $middleware->validateCsrfTokens(except: [
+            'payments/webhook',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -14,7 +14,8 @@
     <p class="text-muted mb-0">Lengkapi brief kebutuhan proyek Anda sebelum melakukan pembayaran ke rekening bersama (Escrow).</p>
 </div>
 
-@if ($errors->any())
+{{-- Hanya tampilkan alert error jika benar-benar ada error validasi form yang dikirim, bukan error status jasa --}}
+@if ($errors->any() && !$errors->has('service'))
     <x-alert type="danger" title="Mohon periksa kembali isian form Anda:">
         <ul class="mb-0 ps-3">
             @foreach ($errors->all() as $error)
@@ -143,10 +144,6 @@
                     <div class="d-flex justify-content-between small mb-2">
                         <span class="text-muted">Harga Paket ({{ $selectedPackage['tier_name'] }})</span>
                         <span class="fw-medium">Rp {{ number_format($selectedPackage['price'], 0, ',', '.') }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between small mb-2">
-                        <span class="text-muted">Biaya Layanan Platform (10%)</span>
-                        <span class="fw-medium">Rp {{ number_format($platformFee, 0, ',', '.') }}</span>
                     </div>
                     <div class="d-flex justify-content-between small mb-3">
                         <span class="text-muted">Kuota Revisi Maksimal</span>

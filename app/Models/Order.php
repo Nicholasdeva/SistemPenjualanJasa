@@ -18,6 +18,7 @@ class Order extends Model
         'total_price',
         'platform_fee',
         'deadline_at',
+        'seller_id', // Pastikan seller_id juga masuk fillable jika belum ada
     ];
 
     protected function casts(): array
@@ -62,5 +63,10 @@ class Order extends Model
     public function dispute(): HasOne
     {
         return $this->hasOne(Dispute::class);
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id'); 
     }
 }

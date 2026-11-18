@@ -3,109 +3,99 @@
 namespace App\Http\Controllers\Buyer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\Service;
 
 class DashboardController extends Controller
 {
+    /** Status pesanan yang masih berjalan (belum selesai/batal). */
+    private const ACTIVE_STATUSES = ['pending_payment', 'paid', 'in_progress', 'delivered', 'revision'];
+
+    /** Status saat dana pembeli masih ditahan di escrow. */
+    private const ESCROW_STATUSES = ['paid', 'in_progress', 'delivered', 'revision', 'disputed'];
+
     public function index()
     {
-        // Data dummy Tahap 1 untuk Dashboard Pembeli (sesuai Blueprint Fiki Tahap 1)
+        $buyerId = auth()->id();
+
         $stats = [
-            'active_orders'     => 2,
-            'waiting_approval'  => 1,
-            'completed_orders'  => 4,
-            'escrow_protected'  => 450000,
+            'pending_payment'  => Order::where('buyer_id', $buyerId)->where('status', 'pending_payment')->count(),
+            'active_orders'    => Order::where('buyer_id', $buyerId)->whereIn('status', ['paid', 'in_progress', 'revision'])->count(),
+            'waiting_approval' => Order::where('buyer_id', $buyerId)->where('status', 'delivered')->count(),
+            'completed_orders' => Order::where('buyer_id', $buyerId)->where('status', 'completed')->count(),
+            'escrow_protected' => (float) Order::where('buyer_id', $buyerId)->whereIn('status', self::ESCROW_STATUSES)->sum('total_price'),
         ];
 
-        $activeOrders = [
-            [
-                'id'           => 1,
-                'invoice_no'   => 'INV-20261022-0001',
-                'service'      => 'Desain Logo Profesional & Brand Identity',
-                'seller_name'  => 'Sinta Penjual',
-                'tier_name'    => 'Basic',
-                'total_price'  => 150000,
-                'status'       => 'in_progress',
-                'deadline'     => now()->addDays(2)->format('d M Y, H:i'),
-                'progress_note'=> 'Penjual sedang mengerjakan sketsa konsep logo.',
-            ],
-            [
-                'id'           => 2,
-                'invoice_no'   => 'INV-20261023-0002',
-                'service'      => 'Pembuatan Landing Page Laravel + Bootstrap 5',
-                'seller_name'  => 'Raka Web Studio',
-                'tier_name'    => 'Standard',
-                'total_price'  => 300000,
-                'status'       => 'delivered',
-                'deadline'     => now()->addDays(1)->format('d M Y, H:i'),
-                'progress_note'=> 'File hasil kerja v1 telah diunggah. Menunggu review Anda.',
-            ],
-        ];
+        $activeOrders = Order::with('servicePackage.service.seller')
+            ->where('buyer_id', $buyerId)
+            ->whereIn('status', self::ACTIVE_STATUSES)
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn (Order $o) => [
+                'id'            => $o->id,
+                'invoice_no'    => $o->invoice_no,
+                'service'       => $o->servicePackage->service->title ?? 'Jasa',
+                'seller_name'   => $o->servicePackage->service->seller->name ?? '-',
+                'tier_name'     => $o->servicePackage->tier_name ?? '-',
+                'total_price'   => (float) $o->total_price,
+                'status'        => $o->status,
+                'deadline'      => $o->deadline_at?->format('d M Y, H:i') ?? 'dimulai setelah dibayar',
+                'progress_note' => $this->progressNote($o->status),
+            ])
+            ->all();
 
-        $recentHistory = [
-            [
-                'id'           => 3,
-                'invoice_no'   => 'INV-20261015-0088',
-                'service'      => 'Penerjemahan Dokumen Abstrak Jurnal (ID-EN)',
-                'seller_name'  => 'Nadia Translator',
-                'tier_name'    => 'Basic',
-                'total_price'  => 120000,
-                'status'       => 'completed',
-                'completed_at' => '18 Okt 2026',
-                'has_review'   => false,
-                'rating'       => null,
-            ],
-            [
-                'id'           => 4,
-                'invoice_no'   => 'INV-20261010-0054',
-                'service'      => 'Video Explainer Promosi Produk UMKM 60 Detik',
-                'seller_name'  => 'Dimas Motion',
-                'tier_name'    => 'Premium',
-                'total_price'  => 550000,
-                'status'       => 'completed',
-                'completed_at' => '12 Okt 2026',
-                'has_review'   => true,
-                'rating'       => 5,
-            ],
-        ];
+        $recentHistory = Order::with(['servicePackage.service.seller', 'review'])
+            ->where('buyer_id', $buyerId)
+            ->where('status', 'completed')
+            ->latest('updated_at')
+            ->take(5)
+            ->get()
+            ->map(fn (Order $o) => [
+                'id'           => $o->id,
+                'invoice_no'   => $o->invoice_no,
+                'service'      => $o->servicePackage->service->title ?? 'Jasa',
+                'seller_name'  => $o->servicePackage->service->seller->name ?? '-',
+                'total_price'  => (float) $o->total_price,
+                'status'       => $o->status,
+                'completed_at' => $o->updated_at->format('d M Y'),
+                'has_review'   => $o->review !== null,
+                'rating'       => $o->review?->rating,
+            ])
+            ->all();
 
-        $savedServices = [
-            [
-                'id'            => 1,
-                'title'         => 'Desain Logo Profesional & Pedoman Brand UMKM',
-                'category'      => 'Desain',
-                'seller'        => 'Sinta Penjual',
-                'rating'        => 4.9,
-                'reviews_count' => 28,
-                'starting_price'=> 150000,
-                'delivery_days' => 3,
-            ],
-            [
-                'id'            => 2,
-                'title'         => 'Optimasi & Pembuatan Website Company Profile Laravel',
-                'category'      => 'Pemrograman',
-                'seller'        => 'Raka Web Studio',
-                'rating'        => 4.8,
-                'reviews_count' => 19,
-                'starting_price'=> 300000,
-                'delivery_days' => 5,
-            ],
-            [
-                'id'            => 3,
-                'title'         => 'Penulisan Artikel SEO & Copywriting Landing Page',
-                'category'      => 'Penulisan',
-                'seller'        => 'Ayu Content Lab',
-                'rating'        => 4.7,
-                'reviews_count' => 14,
-                'starting_price'=> 100000,
-                'delivery_days' => 2,
-            ],
-        ];
+        // Rekomendasi: jasa terbaru yang tampil di katalog (jasa tersimpan/wishlist belum ada di database).
+        $savedServices = Service::visibleInCatalog()
+            ->with(['seller', 'category', 'packages'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->latest()
+            ->take(3)
+            ->get()
+            ->map(fn (Service $s) => [
+                'id'             => $s->id,
+                'title'          => $s->title,
+                'category'       => $s->category?->name ?? '-',
+                'seller'         => $s->seller->name ?? '-',
+                'rating'         => round((float) $s->reviews_avg_rating, 1),
+                'reviews_count'  => $s->reviews_count,
+                'starting_price' => (int) round((float) $s->packages->min('price')),
+                'delivery_days'  => (int) $s->packages->min('delivery_days'),
+            ])
+            ->all();
 
-        return view('buyer.dashboard', compact(
-            'stats',
-            'activeOrders',
-            'recentHistory',
-            'savedServices'
-        ));
+        return view('buyer.dashboard', compact('stats', 'activeOrders', 'recentHistory', 'savedServices'));
+    }
+
+    private function progressNote(string $status): string
+    {
+        return match ($status) {
+            'pending_payment' => 'Menunggu pembayaran. Selesaikan pembayaran agar penjual mulai bekerja.',
+            'paid'            => 'Pembayaran diterima. Menunggu penjual memulai pengerjaan.',
+            'in_progress'     => 'Penjual sedang mengerjakan pesanan Anda.',
+            'delivered'       => 'Hasil kerja sudah diunggah. Menunggu review Anda.',
+            'revision'        => 'Permintaan revisi terkirim. Menunggu penjual merespons.',
+            default           => '',
+        };
     }
 }
