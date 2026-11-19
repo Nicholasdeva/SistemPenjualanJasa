@@ -194,6 +194,21 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Auto-dismiss flash alerts setelah 4 detik -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.alert-dismissible').forEach(function (alert) {
+            setTimeout(function () {
+                var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function () { bsAlert.close(); }, 500);
+            }, 4000);
+        });
+    });
+</script>
+
 @stack('scripts')
 </body>
 </html>
