@@ -42,9 +42,7 @@
         <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="{{ url('/') }}">
             <span class="brand-mark"><i class="bi bi-briefcase-fill"></i></span>
             <span>Marketplace Jasa</span>
-            @auth
-                <span class="badge {{ $roleLabel['class'] }} navbar-brand-badge">{{ $roleLabel['text'] }}</span>
-            @endauth
+
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,27 +52,6 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <!-- Left Navbar Links (Berbeda per peran) -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">
-                        <i class="bi bi-house-door me-1"></i>Beranda
-                    </a>
-                </li>
-                @if (Route::has('catalog'))
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('catalog*') ? 'active' : '' }}" href="{{ route('catalog') }}">
-                            <i class="bi bi-grid me-1"></i>Katalog Jasa
-                        </a>
-                    </li>
-                @endif
-
-                {{-- Menu khusus peran ada di sidebar kiri (dan offcanvas di HP), di sini cukup tautan ke dashboard --}}
-                @auth
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs($userRole . ".*") || request()->routeIs("workspace.*") ? "active" : "" }}" href="{{ route("dashboard") }}">
-                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                        </a>
-                    </li>
-                @endauth
             </ul>
 
             <!-- Right Navbar Links -->

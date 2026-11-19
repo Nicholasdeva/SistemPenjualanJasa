@@ -6,7 +6,7 @@ use App\Models\Category;
 use App\Models\Service;
 
 class CatalogController extends Controller
-{
+{/*  */
     // menampilkan grid jasa yang tayang
     public function index()
     {
