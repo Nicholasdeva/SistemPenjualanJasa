@@ -8,8 +8,11 @@ use App\Models\Service;
 
 class DashboardController extends Controller
 {
+    /** Status menunggu pembayaran (mendukung pending_payment maupun pending dari seeder lama). */
+    private const PENDING_STATUSES = ['pending_payment', 'pending'];
+
     /** Status pesanan yang masih berjalan (belum selesai/batal). */
-    private const ACTIVE_STATUSES = ['pending_payment', 'paid', 'in_progress', 'delivered', 'revision'];
+    private const ACTIVE_STATUSES = ['pending_payment', 'pending', 'paid', 'in_progress', 'delivered', 'revision'];
 
     /** Status saat dana pembeli masih ditahan di escrow. */
     private const ESCROW_STATUSES = ['paid', 'in_progress', 'delivered', 'revision', 'disputed'];
@@ -19,7 +22,7 @@ class DashboardController extends Controller
         $buyerId = auth()->id();
 
         $stats = [
-            'pending_payment'  => Order::where('buyer_id', $buyerId)->where('status', 'pending_payment')->count(),
+            'pending_payment'  => Order::where('buyer_id', $buyerId)->whereIn('status', self::PENDING_STATUSES)->count(),
             'active_orders'    => Order::where('buyer_id', $buyerId)->whereIn('status', ['paid', 'in_progress', 'revision'])->count(),
             'waiting_approval' => Order::where('buyer_id', $buyerId)->where('status', 'delivered')->count(),
             'completed_orders' => Order::where('buyer_id', $buyerId)->where('status', 'completed')->count(),
@@ -40,7 +43,9 @@ class DashboardController extends Controller
                 'tier_name'     => $o->servicePackage->tier_name ?? '-',
                 'total_price'   => (float) $o->total_price,
                 'status'        => $o->status,
-                'deadline'      => $o->deadline_at?->format('d M Y, H:i') ?? 'dimulai setelah dibayar',
+                'is_pending'    => in_array($o->status, self::PENDING_STATUSES, true),
+                'is_overdue'    => $o->isOverdue(),
+                'deadline'      => $o->deadline_at?->format('d M Y, H:i') ?? 'Dimulai setelah dibayar',
                 'progress_note' => $this->progressNote($o->status),
             ])
             ->all();
@@ -90,12 +95,12 @@ class DashboardController extends Controller
     private function progressNote(string $status): string
     {
         return match ($status) {
-            'pending_payment' => 'Menunggu pembayaran. Selesaikan pembayaran agar penjual mulai bekerja.',
-            'paid'            => 'Pembayaran diterima. Menunggu penjual memulai pengerjaan.',
-            'in_progress'     => 'Penjual sedang mengerjakan pesanan Anda.',
-            'delivered'       => 'Hasil kerja sudah diunggah. Menunggu review Anda.',
-            'revision'        => 'Permintaan revisi terkirim. Menunggu penjual merespons.',
-            default           => '',
+            'pending_payment', 'pending' => 'Menunggu pembayaran. Selesaikan pembayaran agar penjual mulai bekerja.',
+            'paid'                       => 'Pembayaran diterima. Menunggu penjual memulai pengerjaan.',
+            'in_progress'                => 'Penjual sedang mengerjakan pesanan Anda.',
+            'delivered'                  => 'Hasil kerja sudah diunggah. Menunggu review dan persetujuan Anda.',
+            'revision'                   => 'Permintaan revisi terkirim. Menunggu penjual mengunggah perbaikan.',
+            default                      => '',
         };
     }
 }

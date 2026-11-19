@@ -5,14 +5,14 @@
 @section('content')
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
     <div>
-        <h1 class="h3 fw-bold mb-1">Dashboard Pembeli</h1>
-        <p class="text-muted mb-0">Selamat datang kembali, <strong>{{ auth()->user()->name ?? 'Pembeli' }}</strong>! Pantau pesanan aktif dan progres kerja penjual di sini.</p>
+        <h1 class="h4 fw-bold mb-1">Dashboard Pembeli</h1>
+        <p class="text-secondary small mb-0">Selamat datang kembali, <strong>{{ auth()->user()->name ?? 'Pembeli' }}</strong>. Pantau pesanan aktif dan progres kerja penjual di sini.</p>
     </div>
     <div class="d-flex gap-2">
-        <x-button :href="route('buyer.orders.index')" variant="outline-primary" icon="bi-bag-check">
+        <x-button :href="route('buyer.orders.index')" variant="outline-primary" size="sm" icon="bi-bag-check">
             Semua Pesanan
         </x-button>
-        <x-button :href="route('catalog')" variant="primary" icon="bi-cart-plus">
+        <x-button :href="route('catalog')" variant="primary" size="sm" icon="bi-cart-plus">
             Cari Jasa
         </x-button>
     </div>
@@ -21,14 +21,14 @@
 @if ($stats['pending_payment'] > 0)
     <x-alert type="warning" title="Ada pesanan menunggu pembayaran">
         Anda punya {{ $stats['pending_payment'] }} pesanan yang belum dibayar.
-        <a href="{{ route('buyer.orders.index') }}" class="alert-link">Lihat pesanan</a>.
+        <a href="{{ route('buyer.orders.index', ['status' => 'pending_payment']) }}" class="alert-link">Lihat pesanan</a>.
     </x-alert>
 @endif
 
 <!-- Kartu Ringkasan Pembeli -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <x-card class="h-100 border-0">
+        <x-card class="h-100">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="text-muted small fw-medium">Pesanan Aktif</div>
@@ -43,7 +43,7 @@
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <x-card class="h-100 border-0">
+        <x-card class="h-100">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="text-muted small fw-medium">Menunggu Persetujuan</div>
@@ -58,7 +58,7 @@
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <x-card class="h-100 border-0">
+        <x-card class="h-100">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="text-muted small fw-medium">Pesanan Selesai</div>
@@ -73,7 +73,7 @@
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <x-card class="h-100 border-0">
+        <x-card class="h-100">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="text-muted small fw-medium">Dana di Escrow</div>
@@ -121,7 +121,10 @@
                             <div class="small text-muted mb-2">
                                 <i class="bi bi-person-circle me-1"></i>Penjual: <strong>{{ $order['seller_name'] }}</strong>
                                 <span class="mx-2">•</span>
-                                <i class="bi bi-calendar-event me-1"></i>Deadline: <strong class="text-dark">{{ $order['deadline'] }}</strong>
+                                <i class="bi bi-calendar-event me-1"></i>Deadline:
+                                <strong class="{{ $order['is_overdue'] ? 'text-danger' : 'text-dark' }}">
+                                    {{ $order['deadline'] }}{{ $order['is_overdue'] ? ' (Terlambat)' : '' }}
+                                </strong>
                             </div>
                             <div class="small text-secondary bg-white p-2 rounded border mb-3">
                                 <i class="bi bi-info-circle text-primary me-1"></i>{{ $order['progress_note'] }}
@@ -132,13 +135,10 @@
                                     Total: Rp {{ number_format($order['total_price'], 0, ',', '.') }}
                                 </div>
                                 <div class="d-flex gap-2">
-                                    @if ($order['status'] === 'pending_payment')
-                                        <form action="{{ route('buyer.orders.simulate-pay', $order['id']) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <x-button type="submit" variant="success" size="sm" icon="bi-cash-coin">
-                                                Bayar Sekarang
-                                            </x-button>
-                                        </form>
+                                    @if ($order['is_pending'])
+                                        <x-button :href="route('buyer.orders.pay', $order['id'])" variant="success" size="sm" icon="bi-cash-coin">
+                                            Bayar Sekarang
+                                        </x-button>
                                     @else
                                         <x-button :href="route('workspace.show', $order['id'])" variant="primary" size="sm" icon="bi-chat-left-text">
                                             Buka Workspace
@@ -200,7 +200,7 @@
     <div class="col-lg-4">
         <x-card title="Jasa Terbaru di Katalog" subtitle="Rekomendasi dari penjual terverifikasi" icon="bi-stars">
             <div class="d-flex flex-column gap-3">
-                @foreach ($savedServices as $srv)
+                @forelse ($savedServices as $srv)
                     <div class="p-3 rounded-3 border bg-white">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ $srv['category'] }}</span>
@@ -220,7 +220,13 @@
                             </x-button>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <x-empty-state
+                        title="Belum Ada Jasa Tayang"
+                        description="Jasa dari penjual terverifikasi akan tampil di sini."
+                        icon="bi-grid"
+                    />
+                @endforelse
             </div>
         </x-card>
     </div>

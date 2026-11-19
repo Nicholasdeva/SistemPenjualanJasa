@@ -12,8 +12,8 @@
                     <li class="breadcrumb-item active" aria-current="page">Beri Ulasan</li>
                 </ol>
             </nav>
-            <h1 class="h3 fw-bold mb-1">Beri Ulasan Layanan</h1>
-            <p class="text-muted mb-0">Bagikan pengalaman kerja sama Anda untuk membantu pembeli lain dan mengapresiasi penjual.</p>
+            <h1 class="h4 fw-bold mb-1">Beri Ulasan Layanan</h1>
+            <p class="text-secondary small mb-0">Bagikan pengalaman kerja sama Anda untuk membantu pembeli lain dan mengapresiasi penjual.</p>
         </div>
 
         @if ($errors->any())
@@ -27,7 +27,7 @@
         @endif
 
         <!-- Ringkasan Pesanan Selesai -->
-        <x-card class="mb-4 bg-light border-0">
+        <x-card class="mb-4 bg-light">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -48,7 +48,7 @@
         </x-card>
 
         <!-- Form Input Bintang 1-5 & Komentar -->
-        <x-card title="Penilaian &amp; Komentar Anda" icon="bi-star-half">
+        <x-card title="Penilaian & Komentar Anda" icon="bi-star-half">
             <form action="{{ route('buyer.reviews.store', $orderSummary['id']) }}" method="POST">
                 @csrf
 
@@ -74,7 +74,7 @@
                         class="form-control @error('comment') is-invalid @enderror"
                         placeholder="Ceritakan kualitas hasil kerja, kecepatan respons, dan ketepatan waktu penjual..."
                         required
-                    >{{ old('comment', 'Hasil desain logo sangat memuaskan, komunikasi penjual ramah, dan revisi dikerjakan tepat sesuai brief. Sangat direkomendasikan!') }}</textarea>
+                    >{{ old('comment') }}</textarea>
                     @error('comment')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

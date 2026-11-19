@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkspaceMessage extends Model
 {
+    public const SYSTEM_PREFIX = '[SISTEM] ';
+
     protected $fillable = [
         'order_id',
         'sender_id',
@@ -30,5 +32,33 @@ class WorkspaceMessage extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    public function isSystemMessage(): bool
+    {
+        return str_starts_with((string) $this->message, self::SYSTEM_PREFIX);
+    }
+
+    public function displayMessage(): string
+    {
+        $text = (string) ($this->message ?? '');
+
+        if ($this->isSystemMessage()) {
+            return substr($text, strlen(self::SYSTEM_PREFIX));
+        }
+
+        return $text;
+    }
+
+    public function attachmentName(): ?string
+    {
+        if (!$this->attachment_url) {
+            return null;
+        }
+
+        $base = basename($this->attachment_url);
+
+        // Hapus prefix timestamp unik (mis. 1763541234_namafile.zip -> namafile.zip) untuk tampilan
+        return preg_replace('/^\d+_/', '', $base) ?: $base;
     }
 }

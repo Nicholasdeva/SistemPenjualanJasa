@@ -4,57 +4,49 @@ namespace App\Http\Controllers\Buyer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
+    private const FILTERS = [
+        'all'             => 'Semua',
+        'pending_payment' => 'Menunggu Bayar',
+        'active'          => 'Sedang Berjalan',
+        'completed'       => 'Selesai',
+        'other'           => 'Sengketa / Batal',
+    ];
+
+    public function index(Request $request)
     {
-        // 1. Data statistik ringkasan
-        $stats = [
-            'active_orders'     => Order::where('buyer_id', auth()->id())->whereIn('status', ['in_progress', 'delivered'])->count(),
-            'waiting_approval'  => Order::where('buyer_id', auth()->id())->where('status', 'delivered')->count(),
-            'completed_orders'  => Order::where('buyer_id', auth()->id())->where('status', 'completed')->count(),
-            'escrow_protected'  => Order::where('buyer_id', auth()->id())->whereIn('status', ['in_progress', 'delivered'])->sum('total_price'),
+        $buyerId = $request->user()->id;
+        $requested = (string) $request->query('status', 'all');
+        $filter = array_key_exists($requested, self::FILTERS) ? $requested : 'all';
+
+        $base = Order::query()->where('buyer_id', $buyerId);
+
+        $counts = [
+            'all'             => (clone $base)->count(),
+            'pending_payment' => (clone $base)->whereIn('status', ['pending_payment', 'pending'])->count(),
+            'active'          => (clone $base)->whereIn('status', ['paid', 'in_progress', 'delivered', 'revision'])->count(),
+            'completed'       => (clone $base)->where('status', 'completed')->count(),
+            'other'           => (clone $base)->whereIn('status', ['disputed', 'cancelled'])->count(),
         ];
 
-        // 2. Daftar pesanan utama
-        $orders = Order::where('buyer_id', auth()->id())
-            ->with('servicePackage.service.seller')
+        $orders = (clone $base)
+            ->with(['servicePackage.service.seller:id,name', 'review'])
+            ->when($filter === 'pending_payment', fn ($q) => $q->whereIn('status', ['pending_payment', 'pending']))
+            ->when($filter === 'active', fn ($q) => $q->whereIn('status', ['paid', 'in_progress', 'delivered', 'revision']))
+            ->when($filter === 'completed', fn ($q) => $q->where('status', 'completed'))
+            ->when($filter === 'other', fn ($q) => $q->whereIn('status', ['disputed', 'cancelled']))
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        // 3. Riwayat pesanan selesai
-        $recentHistory = Order::where('buyer_id', auth()->id())
-            ->where('status', 'completed')
-            ->with('servicePackage.service.seller')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // 4. Data dummy/saved services untuk bagian sidebar/wishlist di view index
-        $savedServices = [
-            [
-                'id'            => 1,
-                'title'         => 'Desain Logo Profesional & Pedoman Brand UMKM',
-                'category'      => 'Desain',
-                'seller'        => 'Sinta Penjual',
-                'rating'        => 4.9,
-                'reviews_count' => 28,
-                'starting_price'=> 150000,
-                'delivery_days' => 3,
-            ],
-            [
-                'id'            => 2,
-                'title'         => 'Optimasi & Pembuatan Website Company Profile Laravel',
-                'category'      => 'Pemrograman',
-                'seller'        => 'Raka Web Studio',
-                'rating'        => 4.8,
-                'reviews_count' => 19,
-                'starting_price'=> 300000,
-                'delivery_days' => 5,
-            ],
-        ];
-
-        return view('buyer.orders.index', compact('orders', 'stats', 'recentHistory', 'savedServices'));
+        return view('buyer.orders.index', [
+            'orders'  => $orders,
+            'filter'  => $filter,
+            'filters' => self::FILTERS,
+            'counts'  => $counts,
+        ]);
     }
 }
