@@ -1,13 +1,13 @@
 @if ($userRole === 'buyer')
     @php
-        // Pesanan terbaru yang sudah punya Workspace (sudah dibayar).
-        $workspaceOrder = \App\Models\Order::where('buyer_id', auth()->id())
-            ->whereIn('status', ['paid', 'in_progress', 'delivered', 'revision', 'completed', 'disputed'])
+        // Pesanan terbaru milik pembeli yang sudah memiliki Workspace (sudah dibayar).
+        $buyerWorkspaceOrder = \App\Models\Order::where('buyer_id', auth()->id())
+            ->whereIn('status', \App\Models\Order::WORKSPACE_STATUSES)
             ->latest()
             ->first();
 
-        $workspaceUrl = $workspaceOrder
-            ? route('workspace.show', $workspaceOrder->id)
+        $buyerWorkspaceUrl = $buyerWorkspaceOrder
+            ? route('workspace.show', $buyerWorkspaceOrder->id)
             : route('buyer.orders.index');
     @endphp
 
@@ -25,7 +25,7 @@
             <i class="bi bi-credit-card"></i>
             <span>Checkout &amp; Bayar</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ $workspaceUrl }}">
+        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ $buyerWorkspaceUrl }}">
             <i class="bi bi-chat-left-dots"></i>
             <span>Workspace Pesanan</span>
         </a>
@@ -49,6 +49,18 @@
     </div>
 
 @elseif ($userRole === 'seller')
+    @php
+        // Pesanan terbaru milik penjual yang sudah memiliki Workspace.
+        $sellerWorkspaceOrder = \App\Models\Order::whereHas('servicePackage.service', fn ($q) => $q->where('seller_id', auth()->id()))
+            ->whereIn('status', \App\Models\Order::WORKSPACE_STATUSES)
+            ->latest()
+            ->first();
+
+        $sellerWorkspaceUrl = $sellerWorkspaceOrder
+            ? route('workspace.show', $sellerWorkspaceOrder->id)
+            : route('seller.orders.index');
+    @endphp
+
     <div class="sidebar-heading">Area Penjual Jasa</div>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}" href="{{ route('seller.dashboard') }}">
@@ -67,7 +79,7 @@
             <i class="bi bi-inbox"></i>
             <span>Pesanan Masuk</span>
         </a>
-        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ route('workspace.show', 1) }}">
+        <a class="nav-link {{ request()->routeIs('workspace.*') ? 'active' : '' }}" href="{{ $sellerWorkspaceUrl }}">
             <i class="bi bi-chat-square-text"></i>
             <span>Workspace Kerja</span>
         </a>

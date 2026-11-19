@@ -69,12 +69,15 @@ Route::middleware(['auth', 'role:buyer,seller'])
     ->prefix('workspace')
     ->name('workspace.')
     ->group(function () {
-        Route::get('{order?}', [WorkspaceController::class, 'show'])->name('show');
-        Route::post('{order?}/message', [WorkspaceController::class, 'sendMessage'])->name('message');
-        Route::post('{order?}/deliver', [WorkspaceController::class, 'deliverWork'])->name('deliver');
-        Route::post('{order?}/revision', [WorkspaceController::class, 'requestRevision'])->name('revision');
-        Route::post('{order?}/approve', [WorkspaceController::class, 'approveOrder'])->name('approve');
-        Route::post('{order?}/dispute', [WorkspaceController::class, 'openDispute'])->name('dispute');
+        Route::get('/', [WorkspaceController::class, 'index'])->name('index');
+        Route::get('{order}', [WorkspaceController::class, 'show'])->name('show');
+        Route::get('{order}/messages', [WorkspaceController::class, 'messages'])->name('messages');
+        Route::get('{order}/attachments/{message}', [WorkspaceController::class, 'downloadAttachment'])->name('attachment');
+        Route::post('{order}/message', [WorkspaceController::class, 'sendMessage'])->name('message');
+        Route::post('{order}/deliver', [WorkspaceController::class, 'deliverWork'])->name('deliver');
+        Route::post('{order}/revision', [WorkspaceController::class, 'requestRevision'])->name('revision');
+        Route::post('{order}/approve', [WorkspaceController::class, 'approveOrder'])->name('approve');
+        Route::post('{order}/dispute', [WorkspaceController::class, 'openDispute'])->name('dispute');
     });
 
 Route::middleware(['auth', 'role:seller'])
