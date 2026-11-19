@@ -7,11 +7,7 @@ use App\Models\Service;
 
 class CatalogController extends Controller
 {
-    /**
-     * Tahap 1: menampilkan grid jasa yang tayang.
-     * Filter kategori, pencarian (ILIKE), urutan harga, paginasi, dan syarat penjual
-     * terverifikasi: scope visibleInCatalog() (Faqih, Tahap 2). Filter & paginasi: Nico, Tahap 2.
-     */
+    // menampilkan grid jasa yang tayang
     public function index()
     {
         $categories = Category::orderBy('name')->get();

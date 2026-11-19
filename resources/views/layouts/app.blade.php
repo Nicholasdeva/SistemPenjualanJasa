@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@hasSection('title') @yield('title') — {{ config('app.name', 'Marketplace Jasa') }} @else {{ config('app.name', 'Marketplace Jasa') }} @endif</title>
+    <title>@hasSection('title') @yield('title') @else {{ config('app.name', 'Marketplace Jasa') }} @endif</title>
 
     <!-- Bootstrap 5.3.3 CSS & Bootstrap Icons 1.11.3 (Dikunci: Bootstrap 5, tidak dicampur Tailwind) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
