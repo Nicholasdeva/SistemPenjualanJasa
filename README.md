@@ -1,4 +1,4 @@
-# Marketplace Penjualan Jasa — Proyek UTS PWL
+# Marketplace Penyedia Jasa - Proyek UTS PWL
 
 Aplikasi web Marketplace Penjualan Jasa berbasis **Laravel 12** dan **PostgreSQL** dengan sistem pembayaran **Escrow (Rekening Bersama)** dan **Workspace Kolaborasi**.
 
