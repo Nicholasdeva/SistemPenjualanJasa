@@ -9,6 +9,7 @@ use App\Http\Requests\Workspace\SendMessageRequest;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WorkspaceMessage;
+use App\Services\EscrowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -342,9 +343,9 @@ class WorkspaceController extends Controller
 
     /**
      * Pembeli menyetujui hasil pekerjaan -> status menjadi completed.
-     * Pemanggilan EscrowService::release() akan dihubungkan pada Tahap 3.
+     * Dana escrow dilepas ke wallet penjual lewat EscrowService::release().
      */
-    public function approveOrder(Request $request, Order $order): RedirectResponse
+    public function approveOrder(Request $request, Order $order, EscrowService $escrow): RedirectResponse
     {
         Gate::authorize('view', $order);
 
@@ -354,7 +355,24 @@ class WorkspaceController extends Controller
             'Hanya pembeli yang dapat menyetujui hasil pekerjaan.'
         );
 
-        $result = DB::transaction(function () use ($order, $request) {
+        try {
+            $result = $this->approveWithinTransaction($order, $request, $escrow);
+        } catch (\DomainException $e) {
+            $result = ['ok' => false, 'message' => $e->getMessage()];
+        }
+
+        if (!$result['ok']) {
+            return back()->with('error', $result['message']);
+        }
+
+        return redirect()
+            ->route('buyer.reviews.create', $order->id)
+            ->with('status', 'Hasil pekerjaan telah disetujui! Status pesanan menjadi Selesai (completed). Silakan berikan ulasan Anda.');
+    }
+
+    private function approveWithinTransaction(Order $order, Request $request, EscrowService $escrow): array
+    {
+        return DB::transaction(function () use ($order, $request, $escrow) {
             $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             if ($lockedOrder->status === 'completed') {
@@ -365,10 +383,8 @@ class WorkspaceController extends Controller
                 return ['ok' => false, 'message' => 'Pesanan hanya dapat disetujui setelah penjual mengunggah hasil kerja (status delivered).'];
             }
 
-            $lockedOrder->status = 'completed';
-            $lockedOrder->save();
-
-            // TODO (Tahap 3): Panggil EscrowService::release($lockedOrder) saat EscrowService milik Faqih sudah tersedia.
+            // Lepas dana escrow ke wallet penjual (dipotong biaya platform); status otomatis menjadi completed.
+            $escrow->release($lockedOrder);
 
             WorkspaceMessage::create([
                 'order_id'       => $lockedOrder->id,
@@ -381,14 +397,6 @@ class WorkspaceController extends Controller
 
             return ['ok' => true, 'already' => false];
         });
-
-        if (!$result['ok']) {
-            return back()->with('error', $result['message']);
-        }
-
-        return redirect()
-            ->route('buyer.reviews.create', $order->id)
-            ->with('status', 'Hasil pekerjaan telah disetujui! Status pesanan menjadi Selesai (completed). Silakan berikan ulasan Anda.');
     }
 
     /**

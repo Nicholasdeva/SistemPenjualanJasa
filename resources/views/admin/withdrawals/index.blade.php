@@ -44,10 +44,16 @@
                             <td class="text-end">
                                 @if ($withdrawal->status === 'pending')
                                     <form action="{{ route('admin.withdrawals.process', $withdrawal) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('Proses penarikan ini?')">
+                                          onsubmit="return confirm('Setujui penarikan ini? Pastikan dana sudah ditransfer ke rekening penjual.')">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="btn btn-sm btn-primary">Proses</button>
+                                        <button type="submit" class="btn btn-sm btn-primary">Setujui</button>
+                                    </form>
+                                    <form action="{{ route('admin.withdrawals.reject', $withdrawal) }}" method="POST" class="d-inline"
+                                          onsubmit="return confirm('Tolak penarikan ini? Nominal akan dikembalikan ke saldo penjual.')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Tolak</button>
                                     </form>
                                 @else
                                     <span class="small text-secondary">Selesai</span>

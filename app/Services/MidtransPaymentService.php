@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\SellerProfile;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +18,7 @@ class MidtransPaymentService
     /** Snap token berlaku 24 jam; token yang masih baru dipakai ulang. */
     private const TOKEN_REUSE_HOURS = 20;
 
-    public function __construct()
+    public function __construct(private EscrowService $escrow)
     {
         Config::$serverKey    = (string) config('services.midtrans.server_key');
         Config::$isProduction = (bool) config('services.midtrans.is_production', false);
@@ -250,10 +249,7 @@ class MidtransPaymentService
             ]);
 
             // Keputusan #3: escrow_balance += total_price.
-            $profile = SellerProfile::where('user_id', $order->servicePackage->service->seller_id)
-                ->lockForUpdate()
-                ->firstOrFail();
-            $profile->increment('escrow_balance', (float) $order->total_price);
+            $this->escrow->hold($order);
 
             Workspace::firstOrCreate(['order_id' => $order->id]);
         });

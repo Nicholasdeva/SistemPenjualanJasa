@@ -196,7 +196,8 @@ class DummyDataSeeder extends Seeder
                         'created_at' => $created->copy()->addDays($package->delivery_days + 1),
                     ]);
                 } else {
-                    $escrow[$seller->id] = ($escrow[$seller->id] ?? 0) + $net;
+                    // Escrow menahan total_price penuh (sama seperti EscrowService::hold); fee dipotong saat release.
+                    $escrow[$seller->id] = ($escrow[$seller->id] ?? 0) + $total;
                 }
 
                 if ($status === 'disputed') {

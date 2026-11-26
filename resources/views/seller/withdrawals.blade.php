@@ -21,7 +21,10 @@
         <div class="card h-100">
             <div class="card-body p-4">
                 <div class="small text-secondary">Saldo tersedia</div>
-                <div class="fs-3 mono mb-4">Rp{{ number_format($wallet, 0, ',', '.') }}</div>
+                <div class="fs-3 mono {{ $pendingTotal > 0 ? 'mb-1' : 'mb-4' }}">Rp{{ number_format($wallet, 0, ',', '.') }}</div>
+                @if ($pendingTotal > 0)
+                    <div class="small text-secondary mb-4">Rp{{ number_format($pendingTotal, 0, ',', '.') }} sedang diproses admin.</div>
+                @endif
 
                 <form action="{{ route('seller.withdrawals.store') }}" method="POST">
                     @csrf
@@ -43,7 +46,8 @@
             <div class="card-body p-4 small text-secondary">
                 <div class="fw-semibold text-dark mb-2">Ketentuan penarikan</div>
                 <ul class="mb-0 ps-3">
-                    <li class="mb-1">Penarikan diproses oleh admin setelah permintaan diajukan.</li>
+                    <li class="mb-1">Saldo langsung dipotong saat penarikan diajukan, lalu diproses oleh admin.</li>
+                    <li class="mb-1">Jika permintaan ditolak admin, nominalnya dikembalikan ke saldo.</li>
                     <li class="mb-1">Dana dikirim ke rekening yang tercatat di Profil Penjual.</li>
                     <li>Saldo escrow belum bisa ditarik sebelum pesanan disetujui pembeli.</li>
                 </ul>

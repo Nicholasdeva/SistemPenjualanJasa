@@ -120,6 +120,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('withdrawals', [Admin\WithdrawalController::class, 'index'])->name('withdrawals.index');
         Route::patch('withdrawals/{withdrawal}/process', [Admin\WithdrawalController::class, 'process'])->name('withdrawals.process');
+        Route::patch('withdrawals/{withdrawal}/reject', [Admin\WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
         Route::get('disputes', [Admin\DisputeController::class, 'index'])->name('disputes.index');
         Route::get('disputes/{dispute}', [Admin\DisputeController::class, 'show'])->name('disputes.show');

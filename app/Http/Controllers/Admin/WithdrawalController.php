@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Withdrawal;
+use App\Services\WithdrawalService;
+use DomainException;
 
 class WithdrawalController extends Controller
 {
@@ -13,17 +15,27 @@ class WithdrawalController extends Controller
         return view('admin.withdrawals.index', compact('withdrawals'));
     }
 
-    public function process(Withdrawal $withdrawal)
+    /** Setujui penarikan (saldo penjual sudah dipotong saat pengajuan). */
+    public function process(Withdrawal $withdrawal, WithdrawalService $withdrawalService)
     {
-        // Tahap 1: hanya ubah status. Logika saldo (WithdrawalService) dikerjakan di Tahap 3.
-        // Nilai status mengikuti enum di migration: pending | approved | rejected
-        if ($withdrawal->status !== 'pending') {
-            return back()->with('warning', 'Permintaan ini sudah diproses sebelumnya.');
+        try {
+            $withdrawalService->approve($withdrawal);
+        } catch (DomainException $e) {
+            return back()->with('warning', $e->getMessage());
         }
 
-        $withdrawal->status = 'approved';
-        $withdrawal->save();
+        return back()->with('success', 'Permintaan penarikan dana disetujui.');
+    }
 
-        return back()->with('success', 'Permintaan penarikan dana berhasil diproses.');
+    /** Tolak penarikan dan kembalikan nominalnya ke wallet penjual. */
+    public function reject(Withdrawal $withdrawal, WithdrawalService $withdrawalService)
+    {
+        try {
+            $withdrawalService->reject($withdrawal);
+        } catch (DomainException $e) {
+            return back()->with('warning', $e->getMessage());
+        }
+
+        return back()->with('success', 'Permintaan penarikan ditolak. Saldo dikembalikan ke penjual.');
     }
 }

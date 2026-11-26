@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
+use App\Services\EscrowService;
+use DomainException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DisputeController extends Controller
 {
@@ -21,7 +24,7 @@ class DisputeController extends Controller
         return view('admin.disputes.show', compact('dispute'));
     }
 
-    public function resolve(Request $request, Dispute $dispute)
+    public function resolve(Request $request, Dispute $dispute, EscrowService $escrow)
     {
         $data = $request->validate([
             'resolution'     => ['required', 'in:refund,release'],
@@ -31,15 +34,27 @@ class DisputeController extends Controller
             'resolution.in'       => 'Putusan tidak valid.',
         ]);
 
-        if ($dispute->status !== 'open') {
-            return back()->with('warning', 'Sengketa ini sudah diputuskan.');
-        }
+        try {
+            DB::transaction(function () use ($dispute, $data, $escrow) {
+                $locked = Dispute::whereKey($dispute->id)->lockForUpdate()->firstOrFail();
 
-        // Tahap 1: hanya mencatat putusan. Pemindahan dana (refund / EscrowService) dikerjakan di Tahap 3.
-        // Nilai status mengikuti enum di migration.
-        $dispute->status = $data['resolution'] === 'refund' ? 'resolved_buyer_refund' : 'resolved_seller_payout';
-        $dispute->admin_decision = $data['admin_decision'] ?? null;
-        $dispute->save();
+                if ($locked->status !== 'open') {
+                    throw new DomainException('Sengketa ini sudah diputuskan.');
+                }
+
+                // Pindahkan dana escrow sesuai putusan: refund -> kembali ke pembeli, release -> ke wallet penjual.
+                $data['resolution'] === 'refund'
+                    ? $escrow->refund($locked->order)
+                    : $escrow->release($locked->order);
+
+                // Nilai status mengikuti enum di migration.
+                $locked->status = $data['resolution'] === 'refund' ? 'resolved_buyer_refund' : 'resolved_seller_payout';
+                $locked->admin_decision = $data['admin_decision'] ?? null;
+                $locked->save();
+            });
+        } catch (DomainException $e) {
+            return back()->with('warning', $e->getMessage());
+        }
 
         return redirect()->route('admin.disputes.index')->with('success', 'Sengketa berhasil diputuskan.');
     }
