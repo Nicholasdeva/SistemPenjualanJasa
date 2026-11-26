@@ -17,7 +17,16 @@
 @endphp
 
 @push('styles')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+    /* ---------- Tipografi (khusus isi beranda, navbar tidak diubah) ---------- */
+    main { --bs-body-font-family: 'Open Sans', 'Segoe UI', Arial, sans-serif; font-family: var(--bs-body-font-family); }
+    main h1, main h2, main h3, main .sec-title, main .stats-bar .num, main .step-num { font-family: inherit; letter-spacing: 0; }
+    main .stats-bar .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .arr { font-family: system-ui, sans-serif; }
+
     /* ---------- Hero ---------- */
     .hero {
         position: relative;
@@ -118,7 +127,12 @@
 
     .role-card { border-radius: 1.25rem; }
     .check-list li { display: flex; gap: .6rem; margin-bottom: .7rem; color: #334155; }
-    .check-list i { color: #2563eb; margin-top: .1rem; }
+    .check-list li::before {
+        content: ''; flex: 0 0 auto; width: 6px; height: 6px; margin-top: .55rem;
+        border-radius: 1px; background: #2563eb;
+    }
+    .float-chip .star { color: #f5a50b; }
+    .float-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 3px #dcf5e5; }
 
     .cta {
         border-radius: 1.5rem;
@@ -147,15 +161,14 @@
             </p>
 
             <form action="{{ route('catalog') }}" method="GET" class="hero-search d-flex align-items-center gap-1 mb-3">
-                <i class="bi bi-search text-primary ms-2"></i>
-                <input type="text" name="q" class="form-control" placeholder="Cari jasa, misal: desain logo">
+                <input type="text" name="q" class="form-control ms-2" placeholder="Cari jasa, misal: desain logo">
                 <button class="btn btn-primary" type="submit">Cari</button>
             </form>
 
             <div class="d-flex flex-wrap gap-2 mb-4">
                 @foreach ($catItems->take(4) as $cat)
                     <a href="{{ $cat['slug'] ? route('catalog', ['category' => $cat['slug']]) : route('catalog') }}" class="chip">
-                        <i class="bi {{ CategoryStyle::icon($cat['name']) }}"></i>{{ $cat['name'] }}
+                        {{ $cat['name'] }}
                     </a>
                 @endforeach
             </div>
@@ -181,19 +194,19 @@
                 <div class="preview">
                     @if ($stats['rating'])
                         <div class="float-chip top">
-                            <i class="bi bi-star-fill text-warning"></i>
+                            <span class="star">★</span>
                             {{ number_format($stats['rating'], 1, ',', '') }} rating rata-rata
                         </div>
                     @endif
 
                     @foreach ($preview as $i => $service)
                         <div class="{{ $i === 1 ? 'p-2nd' : '' }}" style="position: relative; z-index: {{ 2 - $i }};">
-                            @include('public.partials.service-card', ['service' => $service])
+                            @include('public.partials.service-card', ['service' => $service, 'minimal' => true])
                         </div>
                     @endforeach
 
                     <div class="float-chip bottom">
-                        <span class="icon-tile green" style="width:28px;height:28px;font-size:.85rem;"><i class="bi bi-shield-check"></i></span>
+                        <span class="dot"></span>
                         Dana aman di escrow
                     </div>
                 </div>
@@ -231,19 +244,18 @@
             <h2 class="sec-title">Jelajahi kategori</h2>
             <p class="sec-sub">Mulai dari bidang yang paling kamu butuhkan.</p>
         </div>
-        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Semua kategori <i class="bi bi-arrow-right"></i></a>
+        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Semua kategori <span class="arr">→</span></a>
     </div>
 
     <div class="row g-3">
         @foreach ($catItems as $cat)
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="{{ $cat['slug'] ? route('catalog', ['category' => $cat['slug']]) : route('catalog') }}" class="cat-tile">
-                    <span class="icon-tile {{ CategoryStyle::tone($cat['name']) }}"><i class="bi {{ CategoryStyle::icon($cat['name']) }}"></i></span>
                     <span class="lh-sm">
                         <span class="d-block fw-bold">{{ $cat['name'] }}</span>
                         <span class="small text-secondary">{{ $cat['count'] !== null ? $cat['count'] . ' jasa' : 'Segera hadir' }}</span>
                     </span>
-                    <i class="bi bi-arrow-right arrow d-none d-md-inline"></i>
+                    <span class="arrow arr d-none d-md-inline">→</span>
                 </a>
             </div>
         @endforeach
@@ -257,14 +269,14 @@
             <h2 class="sec-title">Jasa terbaru</h2>
             <p class="sec-sub">Baru ditayangkan oleh penjual di marketplace.</p>
         </div>
-        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Lihat semua jasa <i class="bi bi-arrow-right"></i></a>
+        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Lihat semua jasa <span class="arr">→</span></a>
     </div>
 
     @if ($services->isNotEmpty())
         <div class="row g-4">
             @foreach ($services as $service)
                 <div class="col-md-6 col-lg-4">
-                    @include('public.partials.service-card', ['service' => $service])
+                    @include('public.partials.service-card', ['service' => $service, 'minimal' => true])
                 </div>
             @endforeach
         </div>
@@ -307,13 +319,12 @@
     <div class="col-lg-6">
         <div class="card role-card h-100">
             <div class="card-body p-4 p-lg-5">
-                <span class="icon-tile mb-3"><i class="bi bi-bag-check"></i></span>
                 <h3 class="h4 fw-bold mb-2">Untuk pembeli</h3>
                 <p class="text-secondary mb-4">Temukan orang yang tepat tanpa khawatir uang hilang.</p>
                 <ul class="list-unstyled check-list mb-4">
-                    <li><i class="bi bi-check-circle-fill"></i>Dana aman di escrow sampai kamu setuju</li>
-                    <li><i class="bi bi-check-circle-fill"></i>Harga dan jatah revisi jelas sebelum bayar</li>
-                    <li><i class="bi bi-check-circle-fill"></i>Admin membantu kalau terjadi sengketa</li>
+                    <li>Dana aman di escrow sampai kamu setuju</li>
+                    <li>Harga dan jatah revisi jelas sebelum bayar</li>
+                    <li>Admin membantu kalau terjadi sengketa</li>
                 </ul>
                 @guest
                     <a href="{{ route('register', ['role' => 'buyer']) }}" class="btn btn-primary">Daftar sebagai pembeli</a>
@@ -326,13 +337,12 @@
     <div class="col-lg-6">
         <div class="card role-card h-100">
             <div class="card-body p-4 p-lg-5">
-                <span class="icon-tile green mb-3"><i class="bi bi-briefcase"></i></span>
                 <h3 class="h4 fw-bold mb-2">Untuk penjual</h3>
                 <p class="text-secondary mb-4">Tawarkan keahlianmu dan terima pembayaran yang pasti.</p>
                 <ul class="list-unstyled check-list mb-4">
-                    <li><i class="bi bi-check-circle-fill"></i>Pembeli sudah bayar di depan sebelum kamu mulai</li>
-                    <li><i class="bi bi-check-circle-fill"></i>Atur sendiri paket, harga, dan batas revisi</li>
-                    <li><i class="bi bi-check-circle-fill"></i>Tarik saldo langsung ke rekening bank</li>
+                    <li>Pembeli sudah bayar di depan sebelum kamu mulai</li>
+                    <li>Atur sendiri paket, harga, dan batas revisi</li>
+                    <li>Tarik saldo langsung ke rekening bank</li>
                 </ul>
                 @guest
                     <a href="{{ route('register', ['role' => 'seller']) }}" class="btn btn-outline-primary">Daftar sebagai penjual</a>

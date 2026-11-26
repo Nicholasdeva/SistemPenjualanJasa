@@ -28,13 +28,15 @@
     @endif
     <div class="card-body p-4 d-flex flex-column">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <span class="icon-tile {{ \App\Support\CategoryStyle::tone($catName) }}" style="width:34px;height:34px;font-size:.95rem;">
-                <i class="bi {{ \App\Support\CategoryStyle::icon($catName) }}"></i>
-            </span>
+            @if (empty($minimal))
+                <span class="icon-tile {{ \App\Support\CategoryStyle::tone($catName) }}" style="width:34px;height:34px;font-size:.95rem;">
+                    <i class="bi {{ \App\Support\CategoryStyle::icon($catName) }}"></i>
+                </span>
+            @endif
             <span class="small fw-semibold text-secondary">{{ $catName }}</span>
             @if ($service->reviews_count > 0)
                 <span class="ms-auto small fw-semibold text-dark text-nowrap">
-                    <i class="bi bi-star-fill text-warning"></i>
+                    @if (empty($minimal))<i class="bi bi-star-fill text-warning"></i>@else<span style="color:#f5a50b;">★</span>@endif
                     {{ number_format($service->reviews_avg_rating, 1, ',', '') }}
                     <span class="text-secondary fw-normal">({{ $service->reviews_count }})</span>
                 </span>
@@ -53,7 +55,7 @@
                     <span class="svc-price">Rp{{ number_format((float) $cheapest->price, 0, ',', '.') }}</span>
                 </span>
             @endif
-            <i class="bi bi-arrow-right svc-arrow"></i>
+            <span class="svc-arrow" style="font-family:system-ui,sans-serif;">→</span>
         </div>
     </div>
 </a>

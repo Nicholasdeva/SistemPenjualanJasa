@@ -183,12 +183,10 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted gap-2">
             <div class="d-flex align-items-center gap-2">
                 <span class="brand-mark" style="width:24px;height:24px;font-size:.75rem;box-shadow:none;"><i class="bi bi-briefcase-fill"></i></span>
-                <span><strong class="text-dark">Marketplace Jasa</strong> &copy; {{ date('Y') }} · Proyek UTS Pemrograman Web Lanjut</span>
+                <span><strong class="text-dark">Marketplace Jasa</strong> &copy; {{ date('Y') }}</span>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span><i class="bi bi-shield-check text-primary me-1"></i>Transaksi aman dengan escrow</span>
-                <span>Tim: Faqih, Nico, Annis, Fiki</span>
-            </div>
+                <span><i class="bi bi-shield-check text-primary me-1"></i>Transaksi aman dengan escrow</span>            </div>
         </div>
     </div>
 </footer>
