@@ -31,7 +31,7 @@
 @endphp
 
 <!-- Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top app-navbar">
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top app-navbar {{ View::hasSection('full_width') ? 'app-navbar-flat' : '' }}">
     <div class="container-fluid px-3 px-lg-4">
         @if ($showSidebar)
             <button class="btn btn-outline-secondary btn-sm d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#roleSidebarOffcanvas" aria-controls="roleSidebarOffcanvas">
@@ -40,7 +40,7 @@
         @endif
 
         <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="{{ url('/') }}">
-            <span class="brand-mark"><i class="bi bi-briefcase-fill"></i></span>
+            <img src="{{ asset('images/logo.png') }}" alt="" class="brand-logo" style="height:46px;width:auto;mix-blend-mode:multiply;">
             <span>Marketplace Jasa</span>
 
         </a>
@@ -51,7 +51,13 @@
 
         <div class="collapse navbar-collapse" id="mainNavbar">
             <!-- Left Navbar Links (Berbeda per peran) -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2 align-items-lg-center">
+                <li class="nav-item"><a class="nav-link nav-pill {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a></li>
+                <li class="nav-item"><a class="nav-link nav-pill {{ request()->routeIs('catalog*') ? 'active' : '' }}" href="{{ route('catalog') }}">Katalog</a></li>
+                @if (request()->routeIs('home'))
+                    <li class="nav-item"><a class="nav-link nav-pill" href="#cara-kerja">Cara Kerja</a></li>
+                    <li class="nav-item"><a class="nav-link nav-pill" href="#faq">FAQ</a></li>
+                @endif
             </ul>
 
             <!-- Right Navbar Links -->
@@ -99,11 +105,11 @@
                     </li>
                 @else
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">Masuk</a>
+                        <a class="nav-link nav-pill" href="{{ route('login') }}">Masuk</a>
                     </li>
                     @if (Route::has('register'))
                         <li class="nav-item">
-                            <a class="btn btn-primary px-3" href="{{ route('register') }}">Daftar gratis</a>
+                            <a class="btn btn-primary btn-pill" href="{{ route('register') }}">Daftar gratis</a>
                         </li>
                     @endif
                 @endauth
@@ -139,7 +145,8 @@
         <main class="{{ $fullWidth ? 'col-12 p-0' : ($showSidebar ? 'col-12 col-lg-9 col-xl-10 px-3 px-md-4 py-4' : 'col-12 py-4') }}">
             <div class="{{ $fullWidth || $showSidebar ? '' : 'container' }}">
                 <!-- Area Pesan Flash -->
-                <div class="{{ $fullWidth ? 'wrap pt-4' : '' }}">
+                @php $hasFlash = session()->hasAny(['status', 'success', 'error', 'warning', 'info']); @endphp
+                <div class="{{ $fullWidth && $hasFlash ? 'container pt-4' : '' }}">
                 @if (session('status'))
                     <x-alert type="success" class="mb-4">
                         {{ session('status') }}
@@ -182,7 +189,7 @@
     <div class="container-fluid px-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted gap-2">
             <div class="d-flex align-items-center gap-2">
-                <span class="brand-mark" style="width:24px;height:24px;font-size:.75rem;box-shadow:none;"><i class="bi bi-briefcase-fill"></i></span>
+                <img src="{{ asset('images/logo.png') }}" alt="" style="height:28px;width:auto;mix-blend-mode:multiply;">
                 <span><strong class="text-dark">Marketplace Jasa</strong> &copy; {{ date('Y') }}</span>
             </div>
             <div class="d-flex align-items-center gap-3">

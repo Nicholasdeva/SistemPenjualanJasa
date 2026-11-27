@@ -19,8 +19,8 @@
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => "alert alert-{$normalizedType} " . ($dismissible ? 'alert-dismissible fade show ' : '') . 'd-flex align-items-start gap-2 shadow-sm']) }} role="alert">
-    <i class="bi {{ $defaultIcon }} fs-5 flex-shrink-0 mt-1"></i>
+<div {{ $attributes->merge(['class' => "alert alert-{$normalizedType} " . ($dismissible ? 'alert-dismissible fade show ' : '') . 'd-flex align-items-center gap-2 app-alert']) }} role="alert">
+    <span class="alert-ico"><i class="bi {{ $defaultIcon }}"></i></span>
     <div class="flex-grow-1">
         @if ($title)
             <div class="fw-bold mb-1">{{ $title }}</div>

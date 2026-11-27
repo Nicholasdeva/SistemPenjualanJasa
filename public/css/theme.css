@@ -367,3 +367,37 @@ main h1.h4.fw-bold + p { font-size: .9rem; }
     .app-navbar .navbar-brand-badge { display: none; }
     .app-navbar .nav-link { padding: .45rem .6rem !important; }
 }
+
+/* ---------- Navbar gaya pill ---------- */
+.app-navbar .nav-pill {
+    border: 1px solid #dfe3ea;
+    border-radius: 999px;
+    padding: .6rem 1.6rem !important;
+    color: #0b0f19;
+    font-weight: 600;
+    font-size: .95rem;
+    background: #fff;
+    transition: border-color .15s;
+}
+.app-navbar .nav-pill:hover { border-color: #0b0f19; color: #0b0f19; background: #fff; }
+.app-navbar .nav-pill.active { border-color: #0b0f19; color: #0b0f19; background: #fff; }
+.app-navbar .btn-pill { border-radius: 999px; padding: .6rem 1.6rem; font-weight: 600; }
+
+/* Navbar menyatu dengan hero (halaman full-width) */
+.app-navbar.app-navbar-flat { border-bottom: 0 !important; box-shadow: none; }
+
+/* ---------- Alert / notifikasi ---------- */
+.app-alert {
+    --al: #2563eb; --al-bg: #f5f8ff; --al-line: #d6e2fb; --al-ink: #1e3a8a;
+    position: relative; padding: .75rem 2.5rem .75rem .9rem;
+    border: 1px solid var(--al-line); border-radius: .6rem;
+    background: var(--al-bg); color: var(--al-ink);
+    box-shadow: none; font-size: .92rem; line-height: 1.45; font-weight: 400;
+}
+.app-alert .alert-ico { flex: 0 0 auto; color: var(--al); font-size: 1.1rem; line-height: 1; display: inline-flex; }
+.app-alert .btn-close { position: absolute; top: 50%; right: .55rem; transform: translateY(-50%); padding: .55rem; font-size: .7rem; opacity: .5; }
+.app-alert .btn-close:hover { opacity: .9; }
+.app-alert.alert-success { --al: #16a34a; --al-bg: #f3fbf6; --al-line: #cfeadb; --al-ink: #14532d; }
+.app-alert.alert-danger  { --al: #dc2626; --al-bg: #fef6f6; --al-line: #f6d3d3; --al-ink: #7f1d1d; }
+.app-alert.alert-warning { --al: #d97706; --al-bg: #fffaf0; --al-line: #f6e2b8; --al-ink: #78350f; }
+.app-alert.alert-info    { --al: #2563eb; --al-bg: #f5f8ff; --al-line: #d6e2fb; --al-ink: #1e3a8a; }

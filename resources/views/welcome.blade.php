@@ -2,6 +2,7 @@
 
 @section('title', 'Beranda')
 @section('hide_sidebar', true)
+@section('full_width', true)
 
 @use('App\Support\CategoryStyle')
 
@@ -30,70 +31,56 @@
     /* ---------- Hero ---------- */
     .hero {
         position: relative;
-        border-radius: 1.5rem;
         background: #fff;
-        border: 1px solid #dfe5ee;
+        border-bottom: 1px solid #dfe5ee;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, .07);
+    }
+    .hero::before { /* grid tipis di latar, seperti contoh */
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background-image:
+            linear-gradient(#eef1f6 1px, transparent 1px),
+            linear-gradient(90deg, #eef1f6 1px, transparent 1px);
+        background-size: 72px 72px;
+        -webkit-mask-image: radial-gradient(ellipse at 70% 40%, #000 0%, transparent 70%);
+        mask-image: radial-gradient(ellipse at 70% 40%, #000 0%, transparent 70%);
     }
     .hero h1 {
-        font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+        font-size: clamp(2.2rem, 5vw, 3.9rem);
         font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -.01em;
+        line-height: 1.05;
+        letter-spacing: -.03em;
+        color: #0b0f19;
     }
-    .hero h1 .hl { color: #2563eb; }
-    .hero-lead { font-size: 1.05rem; color: #5a6880; max-width: 520px; line-height: 1.65; }
+    .hero-lead { font-size: 1rem; color: #5a6880; max-width: 480px; line-height: 1.65; }
 
-    .hero-search {
-        background: #fff;
-        border: 1px solid #cbd5e3;
-        border-radius: 1rem;
-        padding: .4rem;
-        box-shadow: 0 10px 28px -14px rgba(15, 23, 42, .25);
-        max-width: 560px;
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: .6rem;
+        padding: .3rem .9rem .3rem .3rem;
+        background: #f1f3f7; border-radius: 999px; font-size: .78rem;
     }
-    .hero-search .form-control { border: 0; box-shadow: none; font-size: .98rem; padding-left: .5rem; }
-    .hero-search .btn { border-radius: .75rem; padding: .7rem 1.4rem; }
+    .hero-badge .tag { background: #fff; padding: .3rem .8rem; border-radius: 999px; font-weight: 600; }
+    .hero-badge .txt { font-weight: 600; color: #334155; }
 
-    .chip {
-        display: inline-flex; align-items: center; gap: .35rem;
-        padding: .35rem .8rem;
-        font-size: .82rem; font-weight: 600;
-        color: #334155; background: #fff;
-        border: 1px solid #cbd5e3; border-radius: 999px;
-        text-decoration: none;
-        transition: all .15s;
+    .btn-pill { border-radius: 999px; padding: .7rem 1.8rem; font-weight: 600; }
+
+    .hero-art { animation: hero-float 5s ease-in-out infinite; }
+    .hero-img {
+        width: 100%; height: auto; position: relative;
+        mix-blend-mode: multiply; /* latar putih gambar melebur ke hero */
+        -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+        mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+        transform-origin: 33% 52%;
+        transform: translateX(17%) scale(1.75); /* perbesar toolbox, buang area kosong gambar */
     }
-    .chip i { color: #2563eb; }
-    .chip:hover { border-color: #2563eb; color: #2563eb; }
+    @media (max-width: 991.98px) { .hero-img { transform: scale(1.3); transform-origin: 33% 52%; margin: 1rem 0; } }
+    @keyframes hero-float { 50% { transform: translateY(-10px); } }
+    @media (prefers-reduced-motion: reduce) { .hero-art { animation: none; } }
 
-    .avatar-stack span {
-        width: 32px; height: 32px; border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: .75rem; font-weight: 700;
-        border: 2px solid #fff;
-        margin-left: -8px;
-    }
-    .avatar-stack span:first-child { margin-left: 0; }
-
-    /* preview kanan */
-    .preview { position: relative; max-width: 400px; margin-left: auto; }
-    .preview .card { box-shadow: 0 24px 48px -24px rgba(15, 23, 42, .35); }
-    .preview .p-2nd { margin: -1.25rem 0 0 2.5rem; }
-    .float-chip {
-        position: absolute; z-index: 3;
-        background: #fff; border: 1px solid #cbd5e3; border-radius: .85rem;
-        padding: .55rem .8rem; font-size: .8rem; font-weight: 600; color: #0f172a;
-        box-shadow: 0 12px 28px -12px rgba(15, 23, 42, .3);
-        display: flex; align-items: center; gap: .5rem;
-    }
-    .float-chip.top { top: -14px; right: -10px; }
-    .float-chip.bottom { bottom: -16px; left: -18px; }
-
-    /* ---------- Stats ---------- */
-    .stats-bar .stat + .stat { border-left: 1px solid #dfe5ee; }
-    .stats-bar .num { font-size: 1.6rem; font-weight: 600; color: #0f172a; }
+    .hero-stats { position: relative; }
+    .hero-stats .stat { padding: .25rem 1.25rem; }
+    .hero-stats .stat + .stat { border-left: 1px solid #dfe5ee; }
+    .hero-stats .num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; color: #0b0f19; font-variant-numeric: tabular-nums; }
+    .hero-stats .lbl { font-size: .9rem; color: #5a6880; }
 
     /* ---------- Section ---------- */
     .sec-title { font-size: clamp(1.35rem, 2.6vw, 1.7rem); font-weight: 600; margin-bottom: .35rem; }
@@ -131,168 +118,71 @@
         content: ''; flex: 0 0 auto; width: 6px; height: 6px; margin-top: .55rem;
         border-radius: 1px; background: #2563eb;
     }
-    .float-chip .star { color: #f5a50b; }
-    .float-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 3px #dcf5e5; }
 
-    .cta {
+    .cta-band { background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%); }
+    .cta-old {
         border-radius: 1.5rem;
         background: #fff;
         border: 1px solid #dfe5ee;
         box-shadow: 0 1px 3px rgba(15, 23, 42, .07);
     }
 
-    @media (max-width: 767.98px) {
-        .stats-bar .stat:nth-child(3) { border-left: 0; }
-        .stats-bar .stat:nth-child(n+3) { border-top: 1px solid #dfe5ee; }
-    }
 </style>
 @endpush
 
 @section('content')
 
 {{-- ================= HERO ================= --}}
-<section class="hero px-4 py-5 p-lg-5 mb-4">
-    <div class="row g-5 align-items-center py-lg-3">
-        <div class="col-lg-6">
-            <h1 class="mb-3">Kerjakan proyekmu bareng <span class="hl">freelancer terverifikasi</span></h1>
+<section class="hero pt-5 pb-4 pt-lg-5 pb-lg-4">
+<div class="container position-relative">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-6 position-relative" style="z-index: 1;">
+            <div class="hero-badge mb-4">
+                <span class="tag">Pengguna kami</span>
+                <span class="txt">Dipercaya {{ number_format(max($stats['sellers'], 1) * 10, 0, ',', '.') }}+ orang</span>
+            </div>
+
+            <h1 class="mb-4">Jasa Digital Jadi Lebih Mudah dan Aman</h1>
+
             <p class="hero-lead mb-4">
                 Pesan jasa desain, penulisan, sampai website dengan harga paket yang jelas.
-                Dana kamu ditahan di escrow dan baru diteruskan setelah hasilnya kamu setujui.
+                Dana ditahan di escrow dan baru diteruskan setelah hasilnya kamu setujui.
             </p>
 
-            <form action="{{ route('catalog') }}" method="GET" class="hero-search d-flex align-items-center gap-1 mb-3">
-                <input type="text" name="q" class="form-control ms-2" placeholder="Cari jasa, misal: desain logo">
-                <button class="btn btn-primary" type="submit">Cari</button>
-            </form>
-
-            <div class="d-flex flex-wrap gap-2 mb-4">
-                @foreach ($catItems->take(4) as $cat)
-                    <a href="{{ $cat['slug'] ? route('catalog', ['category' => $cat['slug']]) : route('catalog') }}" class="chip">
-                        {{ $cat['name'] }}
-                    </a>
-                @endforeach
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('catalog') }}" class="btn btn-primary btn-pill">Jelajahi Jasa</a>
+                @guest
+                    <a href="{{ route('register', ['role' => 'seller']) }}" class="btn btn-outline-secondary btn-pill">Mulai Jualan</a>
+                @endguest
             </div>
-
-            @if ($sellerInitials->isNotEmpty())
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar-stack d-flex">
-                        @foreach ($sellerInitials as $i => $name)
-                            @php $tones = [['#eff5ff', '#2563eb'], ['#e8f7ee', '#16a34a'], ['#fff6e0', '#d97706'], ['#f1eeff', '#7c3aed']]; @endphp
-                            <span style="background: {{ $tones[$i % 4][0] }}; color: {{ $tones[$i % 4][1] }};">{{ strtoupper(mb_substr($name, 0, 1)) }}</span>
-                        @endforeach
-                    </div>
-                    <div class="small text-secondary lh-sm">
-                        <strong class="text-dark">{{ $stats['sellers'] }} penjual terverifikasi</strong><br>
-                        siap mengerjakan proyekmu
-                    </div>
-                </div>
-            @endif
         </div>
 
-        <div class="col-lg-6 d-none d-lg-block">
-            @if ($preview->isNotEmpty())
-                <div class="preview">
-                    @if ($stats['rating'])
-                        <div class="float-chip top">
-                            <span class="star">★</span>
-                            {{ number_format($stats['rating'], 1, ',', '') }} rating rata-rata
-                        </div>
-                    @endif
-
-                    @foreach ($preview as $i => $service)
-                        <div class="{{ $i === 1 ? 'p-2nd' : '' }}" style="position: relative; z-index: {{ 2 - $i }};">
-                            @include('public.partials.service-card', ['service' => $service, 'minimal' => true])
-                        </div>
-                    @endforeach
-
-                    <div class="float-chip bottom">
-                        <span class="dot"></span>
-                        Dana aman di escrow
-                    </div>
-                </div>
-            @endif
+        <div class="col-lg-6 text-center">
+            <div class="hero-art"><img src="{{ asset('images/hero-toolbox.png') }}" alt="Kotak peralatan jasa digital" class="hero-img"></div>
         </div>
     </div>
-</section>
 
-{{-- ================= STATS ================= --}}
-<section class="card stats-bar mb-5">
-    <div class="row g-0 text-center">
-        <div class="col-6 col-md-3 stat py-4">
+    <div class="row g-0 hero-stats mt-4 pt-4">
+        <div class="col-4 stat">
             <div class="num">{{ number_format($stats['services'], 0, ',', '.') }}</div>
-            <div class="small text-secondary">Jasa aktif</div>
+            <div class="lbl">Jasa Aktif</div>
         </div>
-        <div class="col-6 col-md-3 stat py-4">
+        <div class="col-4 stat">
             <div class="num">{{ number_format($stats['sellers'], 0, ',', '.') }}</div>
-            <div class="small text-secondary">Penjual terverifikasi</div>
+            <div class="lbl">Penjual Terverifikasi</div>
         </div>
-        <div class="col-6 col-md-3 stat py-4">
+        <div class="col-4 stat">
             <div class="num">{{ number_format($stats['completed'], 0, ',', '.') }}</div>
-            <div class="small text-secondary">Pesanan selesai</div>
-        </div>
-        <div class="col-6 col-md-3 stat py-4">
-            <div class="num">{{ $stats['rating'] ? number_format($stats['rating'], 1, ',', '') : '-' }}</div>
-            <div class="small text-secondary">Rating rata-rata</div>
+            <div class="lbl">Pesanan Selesai</div>
         </div>
     </div>
+</div>
 </section>
 
-{{-- ================= KATEGORI ================= --}}
-<section id="kategori" class="mb-5 pt-2">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-4">
-        <div>
-            <h2 class="sec-title">Jelajahi kategori</h2>
-            <p class="sec-sub">Mulai dari bidang yang paling kamu butuhkan.</p>
-        </div>
-        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Semua kategori <span class="arr">→</span></a>
-    </div>
-
-    <div class="row g-3">
-        @foreach ($catItems as $cat)
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{{ $cat['slug'] ? route('catalog', ['category' => $cat['slug']]) : route('catalog') }}" class="cat-tile">
-                    <span class="lh-sm">
-                        <span class="d-block fw-bold">{{ $cat['name'] }}</span>
-                        <span class="small text-secondary">{{ $cat['count'] !== null ? $cat['count'] . ' jasa' : 'Segera hadir' }}</span>
-                    </span>
-                    <span class="arrow arr d-none d-md-inline">→</span>
-                </a>
-            </div>
-        @endforeach
-    </div>
-</section>
-
-{{-- ================= JASA TERBARU ================= --}}
-<section id="jasa" class="mb-5 pt-2">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-4">
-        <div>
-            <h2 class="sec-title">Jasa terbaru</h2>
-            <p class="sec-sub">Baru ditayangkan oleh penjual di marketplace.</p>
-        </div>
-        <a href="{{ route('catalog') }}" class="fw-semibold text-decoration-none small">Lihat semua jasa <span class="arr">→</span></a>
-    </div>
-
-    @if ($services->isNotEmpty())
-        <div class="row g-4">
-            @foreach ($services as $service)
-                <div class="col-md-6 col-lg-4">
-                    @include('public.partials.service-card', ['service' => $service, 'minimal' => true])
-                </div>
-            @endforeach
-        </div>
-    @else
-        <x-empty-state
-            title="Belum ada jasa"
-            description="Jadilah penjual pertama yang menayangkan jasa di sini."
-            icon="bi-shop"
-            actionText="Mulai jual jasa"
-            :actionUrl="route('register', ['role' => 'seller'])"
-        />
-    @endif
-</section>
+<div class="container pt-5 pb-5">
 
 {{-- ================= CARA KERJA ================= --}}
-<section id="cara-kerja" class="mb-5 pt-4">
+<section id="cara-kerja" class="mb-5">
     <div class="text-center mb-5">
         <h2 class="sec-title">Cara kerjanya</h2>
         <p class="sec-sub">Empat langkah, dan uangmu aman di setiap tahapnya.</p>
@@ -386,19 +276,23 @@
     </div>
 </section>
 
+</div>
+
 {{-- ================= CTA ================= --}}
-<section class="cta p-4 p-lg-5 mb-2">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-            <h2 class="sec-title mb-2">Siap mulai proyek pertamamu?</h2>
-            <p class="sec-sub">Daftar gratis, temukan penjual yang cocok, dan bayar dengan aman.</p>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-            @auth
-                <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg">Buka dashboard</a>
-            @else
-                <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Daftar gratis</a>
-            @endauth
+<section class="cta-band py-5">
+    <div class="container py-lg-3">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <h2 class="text-white fw-bold mb-2">Siap mulai proyek pertamamu?</h2>
+                <p class="mb-0" style="color:#dbe7ff;">Daftar gratis, temukan penjual yang cocok, dan bayar dengan aman.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn btn-light btn-pill btn-lg text-primary">Buka dashboard</a>
+                @else
+                    <a href="{{ route('register') }}" class="btn btn-light btn-pill btn-lg text-primary">Daftar gratis</a>
+                @endauth
+            </div>
         </div>
     </div>
 </section>
